@@ -101,38 +101,42 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
         completedAt: new Date().toISOString(),
       };
 
-      // For local quizzes, store in sessionStorage
+      // Always save attempt to sessionStorage for reliable access on results page
+      sessionStorage.setItem(`attempt-${quiz.id}`, JSON.stringify(attemptData));
+
+      // For local quizzes, just redirect
       if (quiz.id.startsWith('local-')) {
-        sessionStorage.setItem(`attempt-${quiz.id}`, JSON.stringify(attemptData));
         router.push(`/quiz/${quiz.id}/results`);
         return;
       }
 
-      // Save attempt to database
-      const response = await fetch("/api/attempts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quizId: quiz.id,
-          userId,
-          score,
-          totalQuestions: quiz.questions.length,
-          answers,
-        }),
-      });
+      // Try to save attempt to database (but don't block on it)
+      try {
+        const response = await fetch("/api/attempts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            quizId: quiz.id,
+            userId,
+            score,
+            totalQuestions: quiz.questions.length,
+            answers,
+          }),
+        });
 
-      if (!response.ok) {
-        // If DB fails, still save locally and continue
-        sessionStorage.setItem(`attempt-${quiz.id}`, JSON.stringify(attemptData));
-        router.push(`/quiz/${quiz.id}/results`);
-        return;
+        if (response.ok) {
+          const data = await response.json();
+          router.push(`/quiz/${quiz.id}/results?attemptId=${data.attemptId}`);
+          return;
+        }
+      } catch (dbError) {
+        console.error("Failed to save to database:", dbError);
       }
 
-      const data = await response.json();
-      
-      // Navigate to results page
-      router.push(`/quiz/${quiz.id}/results?attemptId=${data.attemptId}`);
+      // If DB save failed, still redirect (sessionStorage has the data)
+      router.push(`/quiz/${quiz.id}/results`);
     } catch (error) {
+      console.error("Error submitting quiz:", error);
       // On any error, try to save locally and continue
       const attemptData = {
         score: quiz.questions.filter(q => 

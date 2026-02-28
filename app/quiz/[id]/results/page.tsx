@@ -41,11 +41,12 @@ export default function QuizResultsPage() {
       return;
     }
 
-    // Check if this is a local quiz
+    // First, always check sessionStorage for attempt data (works for both local and DB quizzes)
+    const storedAttempt = sessionStorage.getItem(`attempt-${quizId}`);
+    const storedQuiz = sessionStorage.getItem(`quiz-${quizId}`);
+    
+    // For local quizzes, use sessionStorage only
     if (quizId.startsWith("local-")) {
-      const storedQuiz = sessionStorage.getItem(`quiz-${quizId}`);
-      const storedAttempt = sessionStorage.getItem(`attempt-${quizId}`);
-      
       if (storedQuiz && storedAttempt) {
         try {
           setQuiz(JSON.parse(storedQuiz));
@@ -60,27 +61,53 @@ export default function QuizResultsPage() {
         setLoading(false);
       }
     } else {
-      // Fetch from database for non-local quizzes
-      fetchFromDB();
+      // For DB quizzes, fetch quiz from DB but use sessionStorage for attempt if available
+      fetchData(storedAttempt);
     }
   }, [quizId, attemptId, user, isLoaded, router]);
 
-  const fetchFromDB = async () => {
+  const fetchData = async (storedAttempt: string | null) => {
     try {
-      // Fetch quiz
+      // Fetch quiz from database
       const quizRes = await fetch(`/api/quizzes/${quizId}`);
       if (!quizRes.ok) throw new Error("Quiz not found");
       const quizData = await quizRes.json();
       setQuiz(quizData);
 
-      // Fetch attempt
-      if (attemptId) {
-        const attemptRes = await fetch(`/api/attempts/${attemptId}`);
-        if (attemptRes.ok) {
-          const attemptData = await attemptRes.json();
+      // First try sessionStorage (always populated after quiz submission)
+      if (storedAttempt) {
+        try {
+          const attemptData = JSON.parse(storedAttempt);
           setAttempt(attemptData);
+          setLoading(false);
+          return;
+        } catch (e) {
+          // Fall through to DB fetch
         }
       }
+
+      // If no sessionStorage and we have attemptId, try fetching from DB
+      if (attemptId) {
+        try {
+          const attemptRes = await fetch(`/api/attempts/${attemptId}`);
+          if (attemptRes.ok) {
+            const attemptData = await attemptRes.json();
+            setAttempt({
+              score: attemptData.score,
+              totalQuestions: attemptData.totalQuestions,
+              answers: attemptData.answers,
+              completedAt: attemptData.completedAt,
+            });
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Fall through to error
+        }
+      }
+
+      // If we have quiz but no attempt data, show error
+      setError("Results not found. Please take the quiz again.");
     } catch (e) {
       setError("Failed to load results");
     } finally {

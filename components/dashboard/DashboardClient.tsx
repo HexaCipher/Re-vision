@@ -316,7 +316,7 @@ export default function DashboardClient({
 
                   <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
                     <Calendar className="w-4 h-4" />
-                    {new Date(quiz.created_at).toLocaleDateString()}
+                    {new Date(quiz.created_at || quiz.createdAt || Date.now()).toLocaleDateString()}
                   </div>
 
                   <div className="text-sm text-slate-400 mb-6">
