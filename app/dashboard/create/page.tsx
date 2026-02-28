@@ -196,9 +196,9 @@ export default function CreateQuizPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/50">
+      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <ArrowLeft className="w-5 h-5 text-slate-400" />

@@ -228,9 +228,9 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/50 sticky top-0 z-50">
+      <div className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">

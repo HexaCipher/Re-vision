@@ -155,9 +155,9 @@ export default function QuizResultsClient({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/50">
+      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20">
         <div className="container mx-auto px-6 py-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
