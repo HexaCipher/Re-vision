@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Trophy, Target, Clock, Home, RotateCcw, CheckCircle, XCircle } from "lucide-react";
+import { Brain, Trophy, Target, Clock, Home, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import confetti from "canvas-confetti";
+import { PageTransition, FadeIn, ScaleIn } from "@/components/ui/PageTransition";
 
 interface ResultData {
   score: number;
@@ -26,6 +26,7 @@ export default function SharedQuizResultsPage() {
 
   const [result, setResult] = useState<ResultData | null>(null);
   const [quizTitle, setQuizTitle] = useState("");
+  const [displayScore, setDisplayScore] = useState(0);
 
   useEffect(() => {
     // Get results from sessionStorage
@@ -58,6 +59,28 @@ export default function SharedQuizResultsPage() {
     }
   }, [shareCode, router]);
 
+  // Animate score counting
+  useEffect(() => {
+    if (!result) return;
+    
+    const duration = 2000;
+    const steps = 50;
+    const increment = result.score / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= result.score) {
+        setDisplayScore(result.score);
+        clearInterval(timer);
+      } else {
+        setDisplayScore(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, [result]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -69,16 +92,15 @@ export default function SharedQuizResultsPage() {
   }
 
   const percentage = Math.round((result.score / result.totalQuestions) * 100);
-  const getGrade = () => {
-    if (percentage >= 90) return { grade: "A+", color: "text-green-400", message: "Outstanding!" };
-    if (percentage >= 80) return { grade: "A", color: "text-green-400", message: "Excellent!" };
-    if (percentage >= 70) return { grade: "B", color: "text-blue-400", message: "Great job!" };
-    if (percentage >= 60) return { grade: "C", color: "text-yellow-400", message: "Good effort!" };
-    if (percentage >= 50) return { grade: "D", color: "text-orange-400", message: "Keep practicing!" };
-    return { grade: "F", color: "text-red-400", message: "Don't give up!" };
+  
+  const getPerformanceMessage = () => {
+    if (percentage >= 90) return { text: "Outstanding!", color: "text-amber-400" };
+    if (percentage >= 70) return { text: "Great Job!", color: "text-emerald-400" };
+    if (percentage >= 50) return { text: "Good Effort!", color: "text-indigo-400" };
+    return { text: "Keep Practicing!", color: "text-violet-400" };
   };
 
-  const gradeInfo = getGrade();
+  const performance = getPerformanceMessage();
 
   const handleRetake = () => {
     // Clear previous results
@@ -87,158 +109,143 @@ export default function SharedQuizResultsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      {/* Header */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/50">
-        <div className="container mx-auto px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6 text-white" />
+    <PageTransition className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+      <div 
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 50%, rgba(99,102,241,0.06) 100%)" }}
+      />
+
+      {/* Navigation */}
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3 sm:py-4 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
+              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
             </div>
-            <span className="text-xl font-bold text-white">RE-vision</span>
+            <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
           </Link>
-        </div>
+        </motion.div>
       </nav>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-8 sm:pb-12">
         <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur text-center">
-              {/* Score Circle */}
-              <div className="relative w-48 h-48 mx-auto mb-8">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="88"
-                    stroke="currentColor"
-                    strokeWidth="12"
-                    fill="none"
-                    className="text-slate-800"
-                  />
-                  <motion.circle
-                    cx="96"
-                    cy="96"
-                    r="88"
-                    stroke="url(#gradient)"
-                    strokeWidth="12"
-                    fill="none"
-                    strokeLinecap="round"
-                    initial={{ strokeDasharray: "0 553" }}
-                    animate={{ strokeDasharray: `${(percentage / 100) * 553} 553` }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                  />
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#8B5CF6" />
-                      <stop offset="100%" stopColor="#3B82F6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-5xl font-bold text-white"
-                  >
-                    {percentage}%
-                  </motion.span>
-                  <span className={`text-2xl font-bold ${gradeInfo.color}`}>
-                    {gradeInfo.grade}
-                  </span>
-                </div>
-              </div>
+          {/* Score Card */}
+          <ScaleIn>
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden mb-6 sm:mb-8 p-6 sm:p-12 text-center relative">
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/10 via-transparent to-emerald-500/10" />
 
-              {/* Message */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                className="w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl shadow-indigo-500/20"
               >
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  {gradeInfo.message}
-                </h1>
-                <p className="text-slate-400 mb-2">
-                  Great effort, <span className="text-purple-400 font-medium">{result.guestName}</span>!
-                </p>
-                {quizTitle && (
-                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                    {quizTitle}
-                  </Badge>
-                )}
+                <Trophy className="w-10 h-10 sm:w-14 sm:h-14 text-white" />
               </motion.div>
 
-              {/* Stats */}
-              <motion.div
+              <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 }}
-                className="grid grid-cols-3 gap-4 my-8"
+                transition={{ delay: 0.5 }}
+                className={`text-2xl sm:text-4xl font-bold mb-3 sm:mb-4 ${performance.color}`}
+                style={{ fontFamily: "var(--font-playfair)" }}
               >
-                <div className="p-4 bg-slate-800/50 rounded-xl">
-                  <Trophy className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{result.score}/{result.totalQuestions}</p>
-                  <p className="text-sm text-slate-400">Correct</p>
-                </div>
-                <div className="p-4 bg-slate-800/50 rounded-xl">
-                  <Target className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{percentage}%</p>
-                  <p className="text-sm text-slate-400">Accuracy</p>
-                </div>
-                <div className="p-4 bg-slate-800/50 rounded-xl">
-                  <Clock className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{formatTime(result.timeElapsed)}</p>
-                  <p className="text-sm text-slate-400">Time</p>
-                </div>
-              </motion.div>
+                {performance.text}
+              </motion.h1>
 
-              {/* Actions */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
-                className="flex gap-4"
-              >
-                <Button
-                  onClick={handleRetake}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Try Again
-                </Button>
-                <Link href="/" className="flex-1">
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                    <Home className="w-4 h-4 mr-2" />
-                    Go Home
-                  </Button>
-                </Link>
-              </motion.div>
-
-              {/* CTA */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.5 }}
-                className="mt-8 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl border border-purple-500/20"
+                transition={{ delay: 0.7 }}
+                className="mb-4 sm:mb-6"
               >
-                <p className="text-slate-300 mb-2">Want to create your own quizzes?</p>
-                <Link href="/sign-up">
-                  <Button variant="link" className="text-purple-400 hover:text-purple-300">
-                    Sign up for free
-                  </Button>
-                </Link>
+                <p className="text-slate-400 mb-2 text-sm sm:text-base">
+                  Great effort, <span className="text-indigo-400 font-medium">{result.guestName}</span>!
+                </p>
+                <div className="text-5xl sm:text-8xl font-bold text-white mb-1 sm:mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
+                  {displayScore}/{result.totalQuestions}
+                </div>
+                <div className="text-xl sm:text-3xl text-slate-400">
+                  {percentage}% Correct
+                </div>
               </motion.div>
-            </Card>
-          </motion.div>
+
+              {quizTitle && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-sm sm:text-lg px-3 sm:px-5 py-1.5 sm:py-2 font-medium">
+                    {quizTitle}
+                  </Badge>
+                </motion.div>
+              )}
+            </div>
+          </ScaleIn>
+
+          {/* Stats */}
+          <FadeIn delay={0.3} className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-3 sm:p-6 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-emerald-500/15 rounded-xl sm:rounded-2xl flex items-center justify-center border border-emerald-500/20 mx-auto mb-2 sm:mb-3">
+                <Target className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-400" />
+              </div>
+              <p className="text-xl sm:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>{result.score}</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Correct</p>
+            </div>
+
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-3 sm:p-6 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-indigo-500/15 rounded-xl sm:rounded-2xl flex items-center justify-center border border-indigo-500/20 mx-auto mb-2 sm:mb-3">
+                <Trophy className="w-5 h-5 sm:w-7 sm:h-7 text-indigo-400" />
+              </div>
+              <p className="text-xl sm:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>{percentage}%</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Accuracy</p>
+            </div>
+
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-3 sm:p-6 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-violet-500/15 rounded-xl sm:rounded-2xl flex items-center justify-center border border-violet-500/20 mx-auto mb-2 sm:mb-3">
+                <Clock className="w-5 h-5 sm:w-7 sm:h-7 text-violet-400" />
+              </div>
+              <p className="text-xl sm:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>{formatTime(result.timeElapsed)}</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Time</p>
+            </div>
+          </FadeIn>
+
+          {/* Actions */}
+          <FadeIn delay={0.4} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Button
+              onClick={handleRetake}
+              variant="outline"
+              className="flex-1 h-12 sm:h-14 rounded-xl text-sm sm:text-base border-white/10 hover:bg-white/5 hover:border-white/20"
+            >
+              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Try Again
+            </Button>
+            <Link href="/" className="flex-1">
+              <Button className="w-full h-12 sm:h-14 rounded-xl bg-white text-slate-950 hover:bg-slate-100 text-sm sm:text-base font-semibold">
+                <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Go Home
+              </Button>
+            </Link>
+          </FadeIn>
+
+          {/* CTA */}
+          <FadeIn delay={0.5} className="mt-6 sm:mt-8">
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 backdrop-blur-xl p-5 sm:p-8 text-center">
+              <p className="text-slate-300 mb-3 text-sm sm:text-base">Want to create your own quizzes?</p>
+              <Link href="/sign-up">
+                <Button variant="outline" className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 h-10 sm:h-11 rounded-xl text-sm sm:text-base">
+                  Sign up for free
+                </Button>
+              </Link>
+            </div>
+          </FadeIn>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

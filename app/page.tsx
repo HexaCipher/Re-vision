@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Brain, Upload, Sparkles, Trophy,
   CheckCircle2, Circle, BookOpen, Zap, Target, Clock, TrendingUp, FileText,
+  Menu, X,
 } from "lucide-react";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -122,17 +123,18 @@ function QuizWidget() {
       <div className="absolute inset-0 -z-10 rounded-3xl blur-3xl bg-indigo-500/12 scale-110" />
 
       <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden shadow-2xl">
-        <div className="px-7 py-5 border-b border-white/8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-indigo-300" />
+        {/* Header - responsive padding and text */}
+        <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-white/8 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300" />
             </div>
-            <div>
-              <p className="text-base font-semibold text-white">Biology — Cell Division</p>
-              <p className="text-sm text-slate-500">AI Generated Quiz</p>
+            <div className="min-w-0">
+              <p className="text-sm sm:text-base font-semibold text-white truncate">Biology — Cell Division</p>
+              <p className="text-xs sm:text-sm text-slate-500">AI Generated Quiz</p>
             </div>
           </div>
-          <span className="text-base text-slate-500 font-mono bg-white/5 px-4 py-1.5 rounded-full">
+          <span className="text-sm sm:text-base text-slate-500 font-mono bg-white/5 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full flex-shrink-0">
             {qIndex + 1}/{mockQuestions.length}
           </span>
         </div>
@@ -145,18 +147,19 @@ function QuizWidget() {
           />
         </div>
 
-        <div className="px-7 pt-7 pb-6">
+        {/* Question - responsive padding */}
+        <div className="px-4 sm:px-7 pt-5 sm:pt-7 pb-4 sm:pb-6">
           <motion.p
             key={qIndex}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="text-lg font-semibold text-white leading-snug mb-6"
+            className="text-base sm:text-lg font-semibold text-white leading-snug mb-4 sm:mb-6"
           >
             {current.q}
           </motion.p>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {current.options.map((opt, i) => {
               const isSelected = selected === i;
               const isCorrect = i === current.correct;
@@ -186,23 +189,24 @@ function QuizWidget() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.07 + 0.1, duration: 0.3 }}
-                  className={`flex items-center gap-4 px-5 py-4 rounded-xl border ${border} ${bg} transition-all duration-300`}
+                  className={`flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 rounded-xl border ${border} ${bg} transition-all duration-300`}
                 >
                   {showResult && isCorrect
-                    ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                    : <Circle className={`w-5 h-5 flex-shrink-0 ${isSelected ? "text-indigo-400" : "text-slate-600"}`} />
+                    ? <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 flex-shrink-0" />
+                    : <Circle className={`w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 ${isSelected ? "text-indigo-400" : "text-slate-600"}`} />
                   }
-                  <span className={`text-base font-medium ${text} transition-colors duration-300`}>{opt}</span>
+                  <span className={`text-sm sm:text-base font-medium ${text} transition-colors duration-300`}>{opt}</span>
                 </motion.div>
               );
             })}
           </div>
         </div>
 
-        <div className="px-7 py-5 border-t border-white/8 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Trophy className="w-5 h-5 text-amber-400" />
-            <span className="text-base text-slate-400">
+        {/* Footer - responsive */}
+        <div className="px-4 sm:px-7 py-4 sm:py-5 border-t border-white/8 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+            <span className="text-sm sm:text-base text-slate-400">
               Score: <span className="text-white font-bold">{score}/{mockQuestions.length}</span>
             </span>
           </div>
@@ -210,20 +214,21 @@ function QuizWidget() {
             key={answered ? "correct" : "pending"}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`text-base font-semibold ${answered ? "text-emerald-400" : "text-slate-500"}`}
+            className={`text-sm sm:text-base font-semibold ${answered ? "text-emerald-400" : "text-slate-500"}`}
           >
             {answered ? "Correct!" : "Thinking…"}
           </motion.span>
         </div>
       </div>
 
+      {/* Floating badges - hidden on very small screens, adjusted position on mobile */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.2, duration: 0.5 }}
-        className="absolute -top-4 -right-4 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/8 border border-white/12 backdrop-blur text-sm text-slate-300 font-medium shadow-xl"
+        className="hidden sm:flex absolute -top-3 -right-3 md:-top-4 md:-right-4 items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/8 border border-white/12 backdrop-blur text-xs md:text-sm text-slate-300 font-medium shadow-xl"
       >
-        <Sparkles className="w-4 h-4 text-indigo-300" />
+        <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-indigo-300" />
         Generated in 8s
       </motion.div>
 
@@ -231,9 +236,9 @@ function QuizWidget() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.4, duration: 0.5 }}
-        className="absolute -bottom-4 -left-4 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/8 border border-white/12 backdrop-blur text-sm text-slate-300 font-medium shadow-xl"
+        className="hidden sm:flex absolute -bottom-3 -left-3 md:-bottom-4 md:-left-4 items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/8 border border-white/12 backdrop-blur text-xs md:text-sm text-slate-300 font-medium shadow-xl"
       >
-        <Upload className="w-4 h-4 text-slate-400" />
+        <Upload className="w-3 h-3 md:w-4 md:h-4 text-slate-400" />
         biology_notes.pdf
       </motion.div>
     </motion.div>
@@ -276,15 +281,16 @@ function ResultWidget() {
       <div className="absolute inset-0 -z-10 rounded-3xl blur-3xl bg-emerald-500/10 scale-110" />
 
       <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden shadow-2xl">
-        <div className="px-8 py-7 border-b border-white/8">
-          <p className="text-base text-slate-400 mb-2">Quiz complete</p>
-          <div className="flex items-end gap-3">
-            <span className="text-7xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
+        {/* Header - responsive */}
+        <div className="px-5 sm:px-8 py-5 sm:py-7 border-b border-white/8">
+          <p className="text-sm sm:text-base text-slate-400 mb-2">Quiz complete</p>
+          <div className="flex items-end gap-2 sm:gap-3">
+            <span className="text-5xl sm:text-7xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
               {count}
             </span>
-            <span className="text-3xl text-slate-500 mb-3">/ 10</span>
+            <span className="text-2xl sm:text-3xl text-slate-500 mb-1 sm:mb-3">/ 10</span>
           </div>
-          <div className="mt-4 h-3 bg-white/8 rounded-full overflow-hidden">
+          <div className="mt-3 sm:mt-4 h-2.5 sm:h-3 bg-white/8 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
               initial={{ width: 0 }}
@@ -293,11 +299,12 @@ function ResultWidget() {
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
             />
           </div>
-          <p className="text-base text-emerald-400 font-semibold mt-3">Great work — 80% correct!</p>
+          <p className="text-sm sm:text-base text-emerald-400 font-semibold mt-2 sm:mt-3">Great work — 80% correct!</p>
         </div>
 
-        <div className="px-8 py-6 space-y-5">
-          <p className="text-sm text-slate-500 uppercase tracking-widest font-semibold">Your subjects</p>
+        {/* Subjects - responsive */}
+        <div className="px-5 sm:px-8 py-5 sm:py-6 space-y-4 sm:space-y-5">
+          <p className="text-xs sm:text-sm text-slate-500 uppercase tracking-widest font-semibold">Your subjects</p>
           {subjects.map((s, i) => (
             <motion.div
               key={i}
@@ -305,10 +312,10 @@ function ResultWidget() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.12 + 0.3 }}
-              className="flex items-center gap-5"
+              className="flex items-center gap-3 sm:gap-5"
             >
-              <span className="text-base text-slate-300 w-24">{s.name}</span>
-              <div className="flex-1 h-2.5 bg-white/8 rounded-full overflow-hidden">
+              <span className="text-sm sm:text-base text-slate-300 w-20 sm:w-24">{s.name}</span>
+              <div className="flex-1 h-2 sm:h-2.5 bg-white/8 rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full ${s.color} rounded-full`}
                   initial={{ width: 0 }}
@@ -317,7 +324,7 @@ function ResultWidget() {
                   transition={{ duration: 1, ease: "easeOut", delay: i * 0.1 + 0.6 }}
                 />
               </div>
-              <span className="text-base font-bold text-white w-12 text-right">{s.score}%</span>
+              <span className="text-sm sm:text-base font-bold text-white w-10 sm:w-12 text-right">{s.score}%</span>
             </motion.div>
           ))}
         </div>
@@ -346,49 +353,87 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
 
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-10 py-5 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-5 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-3"
+          className="flex items-center gap-2 sm:gap-3"
         >
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
-            <Brain className="w-5 h-5 text-slate-950" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white flex items-center justify-center">
+            <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
           </div>
-          <span className="text-white font-bold tracking-tight text-xl">Re-vision</span>
+          <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
         </motion.div>
 
+        {/* Desktop nav */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex items-center gap-4"
+          className="hidden sm:flex items-center gap-3 sm:gap-4"
         >
           <Link href="/sign-in">
-            <Button variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/5 text-base font-medium h-11 px-6">
+            <Button variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/5 text-sm sm:text-base font-medium h-10 sm:h-11 px-4 sm:px-6">
               Sign in
             </Button>
           </Link>
           <Link href="/sign-up">
-            <Button className="bg-white text-slate-950 hover:bg-slate-100 text-base font-semibold h-11 px-7 rounded-xl">
+            <Button className="bg-white text-slate-950 hover:bg-slate-100 text-sm sm:text-base font-semibold h-10 sm:h-11 px-5 sm:px-7 rounded-xl">
               Get started
             </Button>
           </Link>
         </motion.div>
+
+        {/* Mobile menu button */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="sm:hidden p-2 text-white hover:bg-white/10 rounded-xl transition-colors"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </motion.button>
       </nav>
+
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 top-[65px] z-40 sm:hidden bg-black/95 backdrop-blur-2xl border-b border-white/5"
+          >
+            <div className="flex flex-col p-4 gap-3">
+              <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-center text-slate-400 hover:text-white hover:bg-white/5 text-base font-medium h-12">
+                  Sign in
+                </Button>
+              </Link>
+              <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-white text-slate-950 hover:bg-slate-100 text-base font-semibold h-12 rounded-xl">
+                  Get started
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ════════════════════════════════════════════════════════════════════
           HERO
       ════════════════════════════════════════════════════════════════════ */}
       <section
         ref={heroRef}
-        className="relative min-h-screen flex items-center overflow-hidden px-10 md:px-16 lg:px-24"
+        className="relative min-h-screen flex items-center overflow-hidden px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24"
       >
         <div className="pointer-events-none absolute inset-0 -z-10"
           style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.12) 0%, transparent 50%, rgba(16,185,129,0.06) 100%)" }}
@@ -402,16 +447,16 @@ export default function LandingPage() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center pt-32 pb-20"
+          className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 lg:gap-20 items-center pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-20"
         >
           <div className="flex flex-col items-start text-left">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-slate-400 text-sm font-semibold tracking-widest uppercase mb-10"
+              className="inline-flex items-center gap-2 sm:gap-2.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border border-white/10 bg-white/5 text-slate-400 text-xs sm:text-sm font-semibold tracking-widest uppercase mb-6 sm:mb-10"
             >
-              <Sparkles className="w-4 h-4 text-indigo-400" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" />
               AI-powered study tool
             </motion.div>
 
@@ -419,7 +464,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-6xl md:text-7xl lg:text-[5.5rem] font-bold leading-[1.02] tracking-tight text-white mb-8"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold leading-[1.02] tracking-tight text-white mb-5 sm:mb-8"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
               Turn notes
@@ -431,7 +476,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.35 }}
-              className="text-xl md:text-2xl text-slate-400 font-light max-w-lg mb-12 leading-relaxed"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-400 font-light max-w-lg mb-8 sm:mb-12 leading-relaxed"
             >
               Upload your study notes. Get a quiz in 10 seconds.
               Stop re-reading — start recalling.
@@ -441,16 +486,16 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-start gap-5"
+              className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 sm:gap-5 w-full sm:w-auto"
             >
-              <Link href="/sign-up">
-                <Button size="lg" className="bg-white text-slate-950 hover:bg-slate-100 font-bold text-lg px-10 h-14 rounded-2xl group">
+              <Link href="/sign-up" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-100 font-bold text-base sm:text-lg px-8 sm:px-10 h-12 sm:h-14 rounded-xl sm:rounded-2xl group">
                   Start for free
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link href="#how-it-works">
-                <Button size="lg" variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/5 text-lg h-14 px-10 rounded-2xl">
+              <Link href="#how-it-works" className="w-full sm:w-auto">
+                <Button size="lg" variant="ghost" className="w-full sm:w-auto text-slate-400 hover:text-white hover:bg-white/5 text-base sm:text-lg h-12 sm:h-14 px-8 sm:px-10 rounded-xl sm:rounded-2xl">
                   See how it works
                 </Button>
               </Link>
@@ -460,7 +505,7 @@ export default function LandingPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9, duration: 0.8 }}
-              className="mt-16 flex items-center gap-12 border-t border-white/8 pt-10"
+              className="mt-10 sm:mt-16 flex flex-wrap items-center gap-6 sm:gap-8 lg:gap-12 border-t border-white/8 pt-8 sm:pt-10"
             >
               {[
                 { value: "10s", label: "Quiz generation" },
@@ -468,14 +513,15 @@ export default function LandingPage() {
                 { value: "∞", label: "Subjects" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col">
-                  <span className="text-4xl font-bold text-white">{stat.value}</span>
-                  <span className="text-base text-slate-500 mt-1">{stat.label}</span>
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">{stat.value}</span>
+                  <span className="text-sm sm:text-base text-slate-500 mt-0.5 sm:mt-1">{stat.label}</span>
                 </div>
               ))}
             </motion.div>
           </div>
 
-          <div className="flex items-center justify-center lg:justify-end">
+          {/* QuizWidget - Hidden on mobile, shown from md breakpoint */}
+          <div className="hidden md:flex items-center justify-center lg:justify-end">
             <QuizWidget />
           </div>
         </motion.div>
@@ -484,9 +530,9 @@ export default function LandingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.8, duration: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2"
+          className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2"
         >
-          <div className="w-px h-20 bg-gradient-to-b from-white/25 to-transparent" />
+          <div className="w-px h-14 sm:h-20 bg-gradient-to-b from-white/25 to-transparent" />
         </motion.div>
       </section>
 
@@ -495,16 +541,16 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════════════════
           WHY — Bento grid with large feature card
       ════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col justify-center px-10 md:px-16 lg:px-24 py-32 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-20 sm:py-24 md:py-32 overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10"
           style={{ background: "linear-gradient(160deg, rgba(251,191,36,0.06) 0%, transparent 40%, rgba(99,102,241,0.08) 100%)" }}
         />
 
         {/* Section header */}
-        <motion.div {...fadeUpProps(0)} className="text-center mb-20 max-w-4xl mx-auto">
-          <p className="text-base text-indigo-400 font-semibold tracking-widest uppercase mb-6">Why Re-vision</p>
+        <motion.div {...fadeUpProps(0)} className="text-center mb-12 sm:mb-16 md:mb-20 max-w-4xl mx-auto px-2">
+          <p className="text-sm sm:text-base text-indigo-400 font-semibold tracking-widest uppercase mb-4 sm:mb-6">Why Re-vision</p>
           <h2
-            className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1]"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1]"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
             Study smarter with
@@ -512,29 +558,29 @@ export default function LandingPage() {
           </h2>
         </motion.div>
 
-        {/* Bento grid */}
-        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Large feature card — spans 2 cols */}
+        {/* Bento grid - responsive */}
+        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Large feature card — spans 2 cols on lg */}
           <motion.div
             {...fadeUpProps(0.1)}
-            className="lg:col-span-2 relative rounded-[2rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.08] to-transparent p-10 md:p-12 overflow-hidden group"
+            className="lg:col-span-2 relative rounded-2xl sm:rounded-[2rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.08] to-transparent p-6 sm:p-8 md:p-10 lg:p-12 overflow-hidden group"
           >
-            <div className="pointer-events-none absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+            <div className="pointer-events-none absolute top-0 right-0 w-60 sm:w-80 h-60 sm:h-80 bg-amber-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
             
             <div className="relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-8">
-                <Clock className="w-8 h-8 text-amber-400" />
+              <div className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-6 sm:mb-8">
+                <Clock className="w-6 h-6 sm:w-7 md:w-8 sm:h-7 md:h-8 text-amber-400" />
               </div>
               
-              <div className="flex items-end gap-4 mb-4">
-                <span className="text-7xl md:text-8xl font-bold text-amber-400" style={{ fontFamily: "var(--font-playfair)" }}>
+              <div className="flex items-end gap-2 sm:gap-4 mb-3 sm:mb-4">
+                <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-amber-400" style={{ fontFamily: "var(--font-playfair)" }}>
                   <AnimatedNumber value={10} />
                 </span>
-                <span className="text-3xl text-amber-400/70 mb-3 font-medium">seconds</span>
+                <span className="text-xl sm:text-2xl md:text-3xl text-amber-400/70 mb-1 sm:mb-3 font-medium">seconds</span>
               </div>
               
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">From notes to quiz</h3>
-              <p className="text-lg text-slate-400 leading-relaxed max-w-lg">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">From notes to quiz</h3>
+              <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-lg">
                 No manual question writing. Just paste your notes and the quiz is ready before you finish your coffee. 
                 AI does the heavy lifting so you can focus on learning.
               </p>
@@ -542,26 +588,26 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Two stacked cards */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:gap-6">
             <motion.div
               {...fadeUpProps(0.2)}
-              className="relative flex-1 rounded-[2rem] border border-indigo-500/20 bg-gradient-to-br from-indigo-500/[0.08] to-transparent p-8 overflow-hidden group"
+              className="relative flex-1 rounded-2xl sm:rounded-[2rem] border border-indigo-500/20 bg-gradient-to-br from-indigo-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden group"
             >
-              <div className="pointer-events-none absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-[60px]" />
+              <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-indigo-500/10 rounded-full blur-[60px]" />
               
               <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-6">
-                  <TrendingUp className="w-7 h-7 text-indigo-400" />
+                <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-4 sm:mb-6">
+                  <TrendingUp className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-indigo-400" />
                 </div>
                 
-                <div className="flex items-end gap-2 mb-3">
-                  <span className="text-5xl font-bold text-indigo-400" style={{ fontFamily: "var(--font-playfair)" }}>
+                <div className="flex items-end gap-2 mb-2 sm:mb-3">
+                  <span className="text-4xl sm:text-5xl font-bold text-indigo-400" style={{ fontFamily: "var(--font-playfair)" }}>
                     <AnimatedNumber value={50} suffix="%" />
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-bold text-white mb-2">Better retention</h3>
-                <p className="text-base text-slate-400 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Better retention</h3>
+                <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
                   Active recall beats re-reading. Science proves it.
                 </p>
               </div>
@@ -569,23 +615,23 @@ export default function LandingPage() {
 
             <motion.div
               {...fadeUpProps(0.3)}
-              className="relative flex-1 rounded-[2rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.08] to-transparent p-8 overflow-hidden group"
+              className="relative flex-1 rounded-2xl sm:rounded-[2rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden group"
             >
-              <div className="pointer-events-none absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-[60px]" />
+              <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-emerald-500/10 rounded-full blur-[60px]" />
               
               <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-6">
-                  <BookOpen className="w-7 h-7 text-emerald-400" />
+                <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-4 sm:mb-6">
+                  <BookOpen className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-emerald-400" />
                 </div>
                 
-                <div className="flex items-end gap-2 mb-3">
-                  <span className="text-5xl font-bold text-emerald-400" style={{ fontFamily: "var(--font-playfair)" }}>
+                <div className="flex items-end gap-2 mb-2 sm:mb-3">
+                  <span className="text-4xl sm:text-5xl font-bold text-emerald-400" style={{ fontFamily: "var(--font-playfair)" }}>
                     Any
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-bold text-white mb-2">Subject supported</h3>
-                <p className="text-base text-slate-400 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Subject supported</h3>
+                <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
                   History, biology, code, law — AI understands it all.
                 </p>
               </div>
@@ -601,17 +647,17 @@ export default function LandingPage() {
       ════════════════════════════════════════════════════════════════════ */}
       <section
         id="how-it-works"
-        className="relative min-h-screen flex flex-col justify-center px-10 md:px-16 lg:px-24 py-32 overflow-hidden"
+        className="relative min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-20 sm:py-24 md:py-32 overflow-hidden"
       >
         <div className="pointer-events-none absolute inset-0 -z-10"
           style={{ background: "linear-gradient(200deg, rgba(139,92,246,0.08) 0%, transparent 40%, rgba(99,102,241,0.06) 100%)" }}
         />
 
         {/* Section header */}
-        <motion.div {...fadeUpProps(0)} className="text-center mb-24 max-w-4xl mx-auto">
-          <p className="text-base text-violet-400 font-semibold tracking-widest uppercase mb-6">How it works</p>
+        <motion.div {...fadeUpProps(0)} className="text-center mb-14 sm:mb-18 md:mb-24 max-w-4xl mx-auto px-2">
+          <p className="text-sm sm:text-base text-violet-400 font-semibold tracking-widest uppercase mb-4 sm:mb-6">How it works</p>
           <h2
-            className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1]"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1]"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
             Four steps to
@@ -621,10 +667,13 @@ export default function LandingPage() {
 
         {/* Timeline */}
         <div className="max-w-5xl mx-auto w-full relative">
-          {/* Center line */}
+          {/* Center line - hidden on mobile, shown from md */}
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-violet-500/50 via-indigo-500/50 to-emerald-500/50 -translate-x-1/2 hidden md:block" />
 
-          <div className="space-y-16 md:space-y-0">
+          {/* Mobile left line */}
+          <div className="absolute left-5 sm:left-6 top-0 bottom-0 w-px bg-gradient-to-b from-violet-500/50 via-indigo-500/50 to-emerald-500/50 md:hidden" />
+
+          <div className="space-y-8 sm:space-y-12 md:space-y-0">
             {steps.map((step, i) => {
               const isLeft = i % 2 === 0;
               const colors = [
@@ -638,37 +687,42 @@ export default function LandingPage() {
                 <motion.div
                   key={i}
                   {...fadeUpProps(i * 0.15)}
-                  className={`relative flex flex-col md:flex-row items-center gap-8 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"}`}
+                  className={`relative flex items-start md:items-center gap-4 sm:gap-6 md:gap-8 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"}`}
                 >
+                  {/* Mobile dot */}
+                  <div className="md:hidden absolute left-5 sm:left-6 top-6 -translate-x-1/2 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-950 border-2 border-white/20 flex items-center justify-center z-10">
+                    <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${colors.bg.replace('/20', '')}`} />
+                  </div>
+
                   {/* Content card */}
-                  <div className={`w-full md:w-[calc(50%-3rem)] ${isLeft ? "md:text-right" : "md:text-left"}`}>
-                    <div className={`relative rounded-[2rem] border ${colors.border} bg-gradient-to-br from-white/[0.04] to-transparent p-8 md:p-10 overflow-hidden group hover:border-white/20 transition-colors duration-500`}>
+                  <div className={`w-full md:w-[calc(50%-3rem)] pl-10 sm:pl-14 md:pl-0 ${isLeft ? "md:text-right" : "md:text-left"}`}>
+                    <div className={`relative rounded-2xl sm:rounded-[2rem] border ${colors.border} bg-gradient-to-br from-white/[0.04] to-transparent p-5 sm:p-6 md:p-8 lg:p-10 overflow-hidden group hover:border-white/20 transition-colors duration-500`}>
                       {/* Glow */}
-                      <div className={`pointer-events-none absolute ${isLeft ? "-right-20 -top-20" : "-left-20 -top-20"} w-40 h-40 ${colors.glow} rounded-full blur-[80px] opacity-60`} />
+                      <div className={`pointer-events-none absolute ${isLeft ? "-right-20 -top-20" : "-left-20 -top-20"} w-32 sm:w-40 h-32 sm:h-40 ${colors.glow} rounded-full blur-[80px] opacity-60`} />
                       
                       <div className={`relative z-10 flex flex-col ${isLeft ? "md:items-end" : "md:items-start"}`}>
                         {/* Number badge */}
-                        <div className={`inline-flex items-center gap-3 mb-6`}>
-                          <span className={`text-6xl font-bold ${colors.text} opacity-30 font-mono`}>{step.number}</span>
+                        <div className={`inline-flex items-center gap-3 mb-4 sm:mb-6`}>
+                          <span className={`text-4xl sm:text-5xl lg:text-6xl font-bold ${colors.text} opacity-30 font-mono`}>{step.number}</span>
                         </div>
                         
                         {/* Icon */}
-                        <div className={`w-16 h-16 rounded-2xl ${colors.bg} border ${colors.border} flex items-center justify-center mb-6`}>
-                          <step.icon className={`w-8 h-8 ${colors.text}`} />
+                        <div className={`w-12 h-12 sm:w-14 lg:w-16 sm:h-14 lg:h-16 rounded-xl sm:rounded-2xl ${colors.bg} border ${colors.border} flex items-center justify-center mb-4 sm:mb-6`}>
+                          <step.icon className={`w-6 h-6 sm:w-7 lg:w-8 sm:h-7 lg:h-8 ${colors.text}`} />
                         </div>
                         
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">{step.title}</h3>
-                        <p className="text-lg text-slate-400 leading-relaxed">{step.body}</p>
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-4">{step.title}</h3>
+                        <p className="text-sm sm:text-base lg:text-lg text-slate-400 leading-relaxed">{step.body}</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Center dot */}
-                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-slate-950 border-2 border-white/20 items-center justify-center z-10">
-                    <div className={`w-2.5 h-2.5 rounded-full ${colors.bg.replace('/20', '')}`} />
+                  {/* Center dot - desktop only */}
+                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-slate-950 border-2 border-white/20 items-center justify-center z-10">
+                    <div className={`w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full ${colors.bg.replace('/20', '')}`} />
                   </div>
 
-                  {/* Spacer for the other side */}
+                  {/* Spacer for the other side - desktop only */}
                   <div className="hidden md:block w-[calc(50%-3rem)]" />
                 </motion.div>
               );
@@ -682,34 +736,35 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════════════════
           CTA
       ════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center px-10 md:px-16 lg:px-24 py-32 overflow-hidden">
+      <section className="relative min-h-screen flex items-center px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-20 sm:py-24 md:py-32 overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10"
           style={{ background: "linear-gradient(140deg, rgba(16,185,129,0.08) 0%, transparent 50%, rgba(99,102,241,0.06) 100%)" }}
         />
 
-        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 lg:gap-20 items-center">
           <motion.div {...fadeUpProps(0)} className="flex flex-col items-start">
-            <p className="text-base text-emerald-400 font-semibold tracking-widest uppercase mb-8">Get started today</p>
+            <p className="text-sm sm:text-base text-emerald-400 font-semibold tracking-widest uppercase mb-5 sm:mb-8">Get started today</p>
             <h2
-              className="text-6xl md:text-7xl lg:text-[5.5rem] font-bold text-white leading-[1.02] mb-8"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold text-white leading-[1.02] mb-5 sm:mb-8"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
               Study smarter.
               <br />
               <span className="text-slate-400">Not longer.</span>
             </h2>
-            <p className="text-xl md:text-2xl text-slate-400 font-light mb-14 leading-relaxed max-w-lg">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-400 font-light mb-10 sm:mb-14 leading-relaxed max-w-lg">
               Join students who use Re-vision to convert passive notes into active knowledge — and actually remember what they study.
             </p>
-            <Link href="/sign-up">
-              <Button size="lg" className="bg-white text-slate-950 hover:bg-slate-100 font-bold text-lg px-12 h-16 rounded-2xl group">
+            <Link href="/sign-up" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-100 font-bold text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-16 rounded-xl sm:rounded-2xl group">
                 Create your first quiz — free
-                <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 sm:ml-3 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
           </motion.div>
 
-          <div className="flex items-center justify-center lg:justify-end">
+          {/* ResultWidget - Hidden on mobile, shown from md */}
+          <div className="hidden md:flex items-center justify-center lg:justify-end">
             <ResultWidget />
           </div>
         </div>
@@ -718,14 +773,14 @@ export default function LandingPage() {
       <Rule />
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="py-12 px-10 flex items-center justify-between text-base text-slate-500">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
-            <Brain className="w-4 h-4 text-slate-400" />
+      <footer className="py-8 sm:py-12 px-4 sm:px-6 md:px-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm sm:text-base text-slate-500">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 flex items-center justify-center">
+            <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
           </div>
           <span className="font-semibold">Re-vision</span>
         </div>
-        <span>Built for students who want to learn better.</span>
+        <span className="text-center sm:text-right">Built for students who want to learn better.</span>
       </footer>
     </div>
   );

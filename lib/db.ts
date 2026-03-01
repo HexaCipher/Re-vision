@@ -62,50 +62,98 @@ export async function createQuiz(data: {
   sourceContent: string;
   questions: Question[];
 }) {
-  const docRef = await addDoc(quizzesCollection, {
-    user_id: data.userId,
-    title: data.title,
-    subject: data.subject,
-    source_type: data.sourceType,
-    source_content: data.sourceContent,
-    questions: data.questions,
-    created_at: Timestamp.now(),
-  });
+  console.log("createQuiz called with userId:", data.userId);
+  console.log("Quiz title:", data.title);
+  console.log("Number of questions:", data.questions.length);
+  
+  try {
+    const docRef = await addDoc(quizzesCollection, {
+      user_id: data.userId,
+      title: data.title,
+      subject: data.subject,
+      source_type: data.sourceType,
+      source_content: data.sourceContent,
+      questions: data.questions,
+      created_at: Timestamp.now(),
+    });
 
-  // Return the created quiz with its ID
-  return {
-    id: docRef.id,
-    user_id: data.userId,
-    title: data.title,
-    subject: data.subject,
-    source_type: data.sourceType,
-    source_content: data.sourceContent,
-    questions: data.questions,
-    created_at: new Date().toISOString(),
-  };
+    console.log("Quiz created successfully with ID:", docRef.id);
+
+    // Return the created quiz with its ID
+    return {
+      id: docRef.id,
+      user_id: data.userId,
+      title: data.title,
+      subject: data.subject,
+      source_type: data.sourceType,
+      source_content: data.sourceContent,
+      questions: data.questions,
+      created_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error in createQuiz:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error code:", (error as any).code);
+    }
+    throw error;
+  }
 }
 
 export async function getQuizzesByUser(userId: string): Promise<DbQuiz[]> {
-  const q = query(
-    quizzesCollection,
-    where('user_id', '==', userId),
-    orderBy('created_at', 'desc')
-  );
+  try {
+    // Try with orderBy first (requires composite index)
+    const q = query(
+      quizzesCollection,
+      where('user_id', '==', userId),
+      orderBy('created_at', 'desc')
+    );
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      user_id: data.user_id,
-      title: data.title,
-      subject: data.subject,
-      source_type: data.source_type,
-      source_content: data.source_content,
-      questions: data.questions,
-      created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
-    };
-  });
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        user_id: data.user_id,
+        title: data.title,
+        subject: data.subject,
+        source_type: data.source_type,
+        source_content: data.source_content,
+        questions: data.questions,
+        created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
+      };
+    });
+  } catch (error: unknown) {
+    // If composite index is missing, fall back to simple query and sort client-side
+    console.warn('Composite index may be missing, falling back to client-side sorting:', error);
+    
+    const q = query(
+      quizzesCollection,
+      where('user_id', '==', userId)
+    );
+
+    const snapshot = await getDocs(q);
+    const quizzes = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        user_id: data.user_id,
+        title: data.title,
+        subject: data.subject,
+        source_type: data.source_type,
+        source_content: data.source_content,
+        questions: data.questions,
+        created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
+      };
+    });
+    
+    // Sort client-side by created_at descending
+    return quizzes.sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
+  }
 }
 
 export async function getQuizById(quizId: string): Promise<DbQuiz> {

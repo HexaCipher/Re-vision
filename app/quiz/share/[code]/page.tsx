@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +10,7 @@ import { Brain, Loader2, Users, BookOpen, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
+import { PageTransition, FadeIn, ScaleIn } from "@/components/ui/PageTransition";
 
 interface SharedQuiz {
   id: string;
@@ -70,9 +70,13 @@ export default function SharedQuizPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+        <div 
+          className="fixed inset-0 -z-10 pointer-events-none"
+          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)" }}
+        />
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" />
+          <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-indigo-500 mx-auto mb-4" />
           <p className="text-slate-400">Loading quiz...</p>
         </div>
       </div>
@@ -81,63 +85,75 @@ export default function SharedQuizPage() {
 
   if (error || !quiz) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur max-w-md text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Brain className="w-8 h-8 text-red-400" />
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+        <div 
+          className="fixed inset-0 -z-10 pointer-events-none"
+          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)" }}
+        />
+        <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6 sm:p-8 max-w-md text-center">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-500/15 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <Brain className="w-7 h-7 sm:w-8 sm:h-8 text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Quiz Not Found</h1>
-          <p className="text-slate-400 mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Quiz Not Found</h1>
+          <p className="text-slate-400 mb-6 text-sm sm:text-base">
             {error || "This quiz link may have expired or doesn't exist."}
           </p>
           <Link href="/">
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
+            <Button className="bg-white text-slate-950 hover:bg-slate-100 h-11 sm:h-12 rounded-xl font-semibold px-6">
               Go to Homepage
             </Button>
           </Link>
-        </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <PageTransition className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+      <div 
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)" }}
+      />
+
       {/* Header */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/50">
-        <div className="container mx-auto px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6 text-white" />
+      <nav className="border-b border-white/5 backdrop-blur-2xl bg-black/40">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group w-fit">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-slate-100 transition-colors">
+              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
             </div>
-            <span className="text-xl font-bold text-white">RE-vision</span>
+            <span className="text-lg sm:text-xl font-bold text-white">Re-vision</span>
           </Link>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-lg mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur">
+          <ScaleIn>
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6 sm:p-8">
               {/* Quiz Info */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <Badge className="mb-3 bg-purple-500/20 text-purple-400 border-purple-500/30">
+              <div className="text-center mb-6 sm:mb-8">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-14 h-14 sm:w-16 sm:h-16 bg-indigo-500/15 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20"
+                >
+                  <Users className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-400" />
+                </motion.div>
+                <Badge className="mb-3 bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-xs sm:text-sm">
                   Shared Quiz
                 </Badge>
-                <h1 className="text-2xl font-bold text-white mb-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-white mb-3" style={{ fontFamily: "var(--font-playfair)" }}>
                   {quiz.title}
                 </h1>
-                <div className="flex items-center justify-center gap-4 text-slate-400">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center justify-center gap-3 sm:gap-4 text-slate-400 text-sm sm:text-base flex-wrap">
+                  <span className="flex items-center gap-1.5">
                     <BookOpen className="w-4 h-4" />
                     {quiz.subject}
                   </span>
+                  <span className="text-slate-600">•</span>
                   <span>{quiz.questionCount} questions</span>
                 </div>
               </div>
@@ -145,7 +161,7 @@ export default function SharedQuizPage() {
               {/* Guest Name Input */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="guestName" className="text-slate-300">
+                  <Label htmlFor="guestName" className="text-slate-300 text-sm sm:text-base">
                     Enter your name to start
                   </Label>
                   <Input
@@ -153,7 +169,7 @@ export default function SharedQuizPage() {
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     placeholder="Your name"
-                    className="mt-2 bg-slate-800/50 border-slate-700 text-white"
+                    className="mt-2 bg-white/[0.02] border-white/10 text-white rounded-xl h-11 sm:h-12 placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
                     onKeyDown={(e) => e.key === "Enter" && handleStart()}
                   />
                 </div>
@@ -161,7 +177,7 @@ export default function SharedQuizPage() {
                 <Button
                   onClick={handleStart}
                   disabled={isStarting}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  className="w-full bg-white text-slate-950 hover:bg-slate-100 h-11 sm:h-12 rounded-xl font-semibold"
                 >
                   {isStarting ? (
                     <>
@@ -178,13 +194,13 @@ export default function SharedQuizPage() {
               </div>
 
               {/* Info Text */}
-              <p className="text-center text-sm text-slate-500 mt-6">
+              <p className="text-center text-xs sm:text-sm text-slate-500 mt-6">
                 Your results will be shared with the quiz creator
               </p>
-            </Card>
-          </motion.div>
+            </div>
+          </ScaleIn>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

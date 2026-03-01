@@ -154,26 +154,26 @@ export default function QuizResultsClient({
       />
 
       {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 lg:px-10 py-4 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3 sm:py-4 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-              <Brain className="w-5 h-5 text-slate-950" />
+          <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
+              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
             </div>
-            <span className="text-white font-bold tracking-tight text-xl">Re-vision</span>
+            <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
           </Link>
         </motion.div>
       </nav>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 pt-28 pb-12">
+      <div className="container mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-8 sm:pb-12">
         <div className="max-w-4xl mx-auto">
           {/* Score Card */}
           <ScaleIn>
-            <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden mb-8 p-12 text-center relative">
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden mb-6 sm:mb-8 p-6 sm:p-12 text-center relative">
               <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/10 via-transparent to-emerald-500/10" />
               
               {attemptNumber > 0 && (
@@ -181,7 +181,7 @@ export default function QuizResultsClient({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-6"
+                  className="mb-4 sm:mb-6"
                 >
                   <Badge className="bg-white/5 text-slate-400 border-white/10">
                     <History className="w-3 h-3 mr-1" />
@@ -194,16 +194,16 @@ export default function QuizResultsClient({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="w-28 h-28 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-indigo-500/20"
+                className="w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl shadow-indigo-500/20"
               >
-                <Trophy className="w-14 h-14 text-white" />
+                <Trophy className="w-10 h-10 sm:w-14 sm:h-14 text-white" />
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className={`text-4xl font-bold mb-4 ${performance.color}`}
+                className={`text-2xl sm:text-4xl font-bold mb-3 sm:mb-4 ${performance.color}`}
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
                 {performance.text}
@@ -213,12 +213,12 @@ export default function QuizResultsClient({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="mb-6"
+                className="mb-4 sm:mb-6"
               >
-                <div className="text-8xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
+                <div className="text-5xl sm:text-8xl font-bold text-white mb-1 sm:mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
                   {displayScore}/{attempt.totalQuestions}
                 </div>
-                <div className="text-3xl text-slate-400">
+                <div className="text-xl sm:text-3xl text-slate-400">
                   {percentage}% Correct
                 </div>
               </motion.div>
@@ -228,10 +228,10 @@ export default function QuizResultsClient({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.9 }}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border ${comparison.bgColor} mb-6`}
+                  className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border ${comparison.bgColor} mb-4 sm:mb-6`}
                 >
-                  <comparison.icon className={`w-5 h-5 ${comparison.color}`} />
-                  <span className={`font-medium ${comparison.color}`}>{comparison.text}</span>
+                  <comparison.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${comparison.color}`} />
+                  <span className={`text-sm sm:text-base font-medium ${comparison.color}`}>{comparison.text}</span>
                 </motion.div>
               )}
 
@@ -240,7 +240,7 @@ export default function QuizResultsClient({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.0 }}
               >
-                <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-lg px-5 py-2 font-medium">
+                <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-sm sm:text-lg px-3 sm:px-5 py-1.5 sm:py-2 font-medium">
                   {quiz.subject}
                 </Badge>
               </motion.div>
@@ -248,47 +248,47 @@ export default function QuizResultsClient({
           </ScaleIn>
 
           {/* Stats */}
-          <FadeIn delay={0.3} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-emerald-500/15 rounded-2xl flex items-center justify-center border border-emerald-500/20">
-                  <Target className="w-7 h-7 text-emerald-400" />
+          <FadeIn delay={0.3} className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-500/15 rounded-xl sm:rounded-2xl flex items-center justify-center border border-emerald-500/20">
+                  <Target className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 font-medium">Correct Answers</p>
-                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>{attempt.score}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium">Correct Answers</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>{attempt.score}</p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-red-500/15 rounded-2xl flex items-center justify-center border border-red-500/20">
-                  <Target className="w-7 h-7 text-red-400" />
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-500/15 rounded-xl sm:rounded-2xl flex items-center justify-center border border-red-500/20">
+                  <Target className="w-6 h-6 sm:w-7 sm:h-7 text-red-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 font-medium">Incorrect Answers</p>
-                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium">Incorrect Answers</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
                     {attempt.totalQuestions - attempt.score}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-indigo-500/15 rounded-2xl flex items-center justify-center border border-indigo-500/20">
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/15 rounded-xl sm:rounded-2xl flex items-center justify-center border border-indigo-500/20">
                   {previousBest !== null ? (
-                    <TrendingUp className="w-7 h-7 text-indigo-400" />
+                    <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" />
                   ) : (
-                    <Brain className="w-7 h-7 text-indigo-400" />
+                    <Brain className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" />
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 font-medium">
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium">
                     {previousBest !== null ? "Best Score" : "Accuracy"}
                   </p>
-                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
+                  <p className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
                     {previousBest !== null 
                       ? `${Math.max(percentage, previousBest)}%`
                       : `${percentage}%`
@@ -300,24 +300,24 @@ export default function QuizResultsClient({
           </FadeIn>
 
           {/* Actions */}
-          <FadeIn delay={0.4} className="flex flex-col sm:flex-row gap-4">
+          <FadeIn delay={0.4} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Link href={`/quiz/${quiz.id}/review`} className="flex-1">
-              <Button className="w-full bg-white text-slate-950 hover:bg-slate-100 text-lg h-14 rounded-xl font-semibold">
+              <Button className="w-full bg-white text-slate-950 hover:bg-slate-100 text-base sm:text-lg h-12 sm:h-14 rounded-xl font-semibold">
                 Review Answers
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
               </Button>
             </Link>
 
             <Link href={`/quiz/${quiz.id}/take`} className="flex-1" onClick={handleRetake}>
-              <Button variant="outline" className="w-full text-lg h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20">
-                <RotateCcw className="w-5 h-5 mr-2" />
+              <Button variant="outline" className="w-full text-base sm:text-lg h-12 sm:h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20">
+                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Retake Quiz
               </Button>
             </Link>
 
-            <Link href="/dashboard">
-              <Button variant="outline" className="w-full sm:w-auto text-lg h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20">
-                <Home className="w-5 h-5 mr-2" />
+            <Link href="/dashboard" className="sm:flex-none">
+              <Button variant="outline" className="w-full text-base sm:text-lg h-12 sm:h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20">
+                <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Dashboard
               </Button>
             </Link>
@@ -325,48 +325,50 @@ export default function QuizResultsClient({
 
           {/* Previous Attempts History */}
           {attemptHistory.length > 1 && (
-            <FadeIn delay={0.5} className="mt-8">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <History className="w-5 h-5 text-indigo-400" />
+            <FadeIn delay={0.5} className="mt-6 sm:mt-8">
+              <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                  <History className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
                   Attempt History
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {attemptHistory.slice(0, 5).map((hist, index) => (
                     <div
                       key={hist.completedAt}
-                      className={`flex items-center justify-between p-4 rounded-xl ${
+                      className={`flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl ${
                         index === 0 
                           ? 'bg-indigo-500/10 border border-indigo-500/20' 
                           : 'bg-white/[0.02] border border-white/5'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-slate-500 text-sm font-medium">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">
                           #{attemptHistory.length - index}
                         </span>
-                        <span className="text-white font-bold">
+                        <span className="text-white font-bold text-sm sm:text-base">
                           {hist.score}/{hist.totalQuestions}
                         </span>
-                        {index === 0 && (
-                          <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-xs">
-                            Latest
-                          </Badge>
-                        )}
-                        {hist.percentage === Math.max(...attemptHistory.map(h => h.percentage)) && (
-                          <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/25 text-xs">
-                            Best
-                          </Badge>
-                        )}
+                        <div className="flex gap-1.5">
+                          {index === 0 && (
+                            <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-xs">
+                              Latest
+                            </Badge>
+                          )}
+                          {hist.percentage === Math.max(...attemptHistory.map(h => h.percentage)) && (
+                            <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/25 text-xs">
+                              Best
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className={`font-bold ${
+                      <div className="flex items-center gap-2 sm:gap-4">
+                        <span className={`font-bold text-sm sm:text-base ${
                           hist.percentage >= 70 ? 'text-emerald-400' : 
                           hist.percentage >= 50 ? 'text-amber-400' : 'text-red-400'
                         }`}>
                           {hist.percentage}%
                         </span>
-                        <span className="text-slate-500 text-sm">
+                        <span className="text-slate-500 text-xs sm:text-sm hidden xs:inline">
                           {new Date(hist.completedAt).toLocaleDateString()}
                         </span>
                       </div>
@@ -378,9 +380,9 @@ export default function QuizResultsClient({
           )}
 
           {/* Motivational Message */}
-          <FadeIn delay={0.6} className="mt-8">
-            <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 backdrop-blur-xl p-8 text-center">
-              <p className="text-slate-300 text-lg">
+          <FadeIn delay={0.6} className="mt-6 sm:mt-8">
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 backdrop-blur-xl p-5 sm:p-8 text-center">
+              <p className="text-slate-300 text-base sm:text-lg">
                 {percentage >= 90
                   ? "You've mastered this material! Keep up the excellent work!"
                   : percentage >= 70

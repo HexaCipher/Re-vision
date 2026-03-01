@@ -214,35 +214,35 @@ export default function CreateQuizPage() {
       {/* Navbar */}
       <Navbar user={userData} showBackButton backHref="/dashboard" backLabel="Back to Dashboard" />
 
-      {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-6 pt-28 pb-12">
+      {/* Main Content - responsive padding */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 md:pt-28 pb-8 sm:pb-12">
         <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
+          {/* Header - responsive sizing */}
+          <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <FadeIn>
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Brain className="w-8 h-8 text-slate-950" />
+              <div className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <Brain className="w-6 h-6 sm:w-7 md:w-8 sm:h-7 md:h-8 text-slate-950" />
               </div>
             </FadeIn>
             <FadeIn delay={0.1}>
-              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-3">
+              <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">
                 Create New Quiz
               </h1>
             </FadeIn>
             <FadeIn delay={0.2}>
-              <p className="text-slate-400 text-lg">
+              <p className="text-slate-400 text-base sm:text-lg">
                 Step {step} of 3
               </p>
             </FadeIn>
           </div>
 
-          {/* Progress Bar */}
-          <FadeIn delay={0.3} className="mb-10">
-            <div className="flex gap-3">
+          {/* Progress Bar - responsive */}
+          <FadeIn delay={0.3} className="mb-6 sm:mb-8 md:mb-10">
+            <div className="flex gap-2 sm:gap-3">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                  className={`h-1 sm:h-1.5 flex-1 rounded-full transition-all duration-500 ${
                     i <= step
                       ? "bg-white"
                       : "bg-white/10"
@@ -262,50 +262,50 @@ export default function CreateQuizPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8">
-                  <h2 className="font-playfair text-2xl font-bold text-white mb-6">
+                <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 sm:p-6 md:p-8">
+                  <h2 className="font-playfair text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                     Choose Input Method
                   </h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <button
                       onClick={() => setInputType("text")}
-                      className={`p-6 rounded-2xl border-2 transition-all text-left ${
+                      className={`p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all text-left ${
                         inputType === "text"
                           ? "border-white bg-white/5"
                           : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                       }`}
                     >
                       <FileText
-                        className={`w-8 h-8 mb-3 ${
+                        className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 sm:mb-3 ${
                           inputType === "text" ? "text-white" : "text-slate-400"
                         }`}
                       />
-                      <h3 className="text-lg font-semibold text-white mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
                         Paste Text
                       </h3>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-xs sm:text-sm text-slate-400">
                         Copy and paste your notes directly
                       </p>
                     </button>
 
                     <button
                       onClick={() => setInputType("pdf")}
-                      className={`p-6 rounded-2xl border-2 transition-all text-left ${
+                      className={`p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all text-left ${
                         inputType === "pdf"
                           ? "border-white bg-white/5"
                           : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                       }`}
                     >
                       <Upload
-                        className={`w-8 h-8 mb-3 ${
+                        className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 sm:mb-3 ${
                           inputType === "pdf" ? "text-white" : "text-slate-400"
                         }`}
                       />
-                      <h3 className="text-lg font-semibold text-white mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
                         Upload Document
                       </h3>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-xs sm:text-sm text-slate-400">
                         PDF, DOCX, or TXT files supported
                       </p>
                     </button>
@@ -313,7 +313,7 @@ export default function CreateQuizPage() {
 
                   <Button
                     onClick={handleNext}
-                    className="w-full mt-8 bg-white text-slate-950 hover:bg-slate-100 h-14 rounded-xl font-semibold text-base"
+                    className="w-full mt-6 sm:mt-8 bg-white text-slate-950 hover:bg-slate-100 h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base"
                   >
                     Continue
                   </Button>
@@ -329,16 +329,16 @@ export default function CreateQuizPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8">
-                  <h2 className="font-playfair text-2xl font-bold text-white mb-6">
+                <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 sm:p-6 md:p-8">
+                  <h2 className="font-playfair text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                     {inputType === "pdf" ? "Upload Your Document" : "Enter Your Notes"}
                   </h2>
 
                   {inputType === "text" ? (
                     // Text Input Mode
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <Label htmlFor="content" className="text-slate-300 font-medium">
+                        <Label htmlFor="content" className="text-slate-300 font-medium text-sm sm:text-base">
                           Paste your study notes here
                         </Label>
                         <Textarea
@@ -348,16 +348,16 @@ export default function CreateQuizPage() {
                             setFormData({ ...formData, content: e.target.value })
                           }
                           placeholder="Paste your notes, lecture content, or any text you want to learn from..."
-                          className="mt-3 min-h-[300px] bg-white/[0.02] border-white/10 text-white placeholder:text-slate-500 focus:border-white/30 rounded-xl resize-none"
+                          className="mt-2 sm:mt-3 min-h-[200px] sm:min-h-[250px] md:min-h-[300px] bg-white/[0.02] border-white/10 text-white placeholder:text-slate-500 focus:border-white/30 rounded-xl resize-none text-sm sm:text-base"
                         />
-                        <p className="text-sm text-slate-500 mt-3">
+                        <p className="text-xs sm:text-sm text-slate-500 mt-2 sm:mt-3">
                           {formData.content.length.toLocaleString()} characters
                         </p>
                       </div>
                     </div>
                   ) : (
                     // Document Upload Mode
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -370,13 +370,13 @@ export default function CreateQuizPage() {
                         // Upload dropzone
                         <div
                           onClick={() => fileInputRef.current?.click()}
-                          className="border-2 border-dashed border-white/10 rounded-2xl p-12 text-center cursor-pointer hover:border-white/20 hover:bg-white/[0.02] transition-all"
+                          className="border-2 border-dashed border-white/10 rounded-xl sm:rounded-2xl p-8 sm:p-10 md:p-12 text-center cursor-pointer hover:border-white/20 hover:bg-white/[0.02] transition-all"
                         >
-                          <FileUp className="w-16 h-16 mx-auto mb-4 text-slate-500" />
-                          <p className="text-lg font-medium text-white mb-2">
+                          <FileUp className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 mx-auto mb-3 sm:mb-4 text-slate-500" />
+                          <p className="text-base sm:text-lg font-medium text-white mb-1 sm:mb-2">
                             Click to upload your document
                           </p>
-                          <p className="text-sm text-slate-400 mb-1">
+                          <p className="text-xs sm:text-sm text-slate-400 mb-1">
                             PDF, DOCX, or TXT files
                           </p>
                           <p className="text-xs text-slate-500">
@@ -385,48 +385,48 @@ export default function CreateQuizPage() {
                         </div>
                       ) : isUploadingPdf ? (
                         // Uploading state
-                        <div className="border-2 border-indigo-500/30 rounded-2xl p-12 text-center bg-indigo-500/5">
-                          <Loader2 className="w-16 h-16 mx-auto mb-4 text-indigo-400 animate-spin" />
-                          <p className="text-lg font-medium text-white mb-2">
+                        <div className="border-2 border-indigo-500/30 rounded-xl sm:rounded-2xl p-8 sm:p-10 md:p-12 text-center bg-indigo-500/5">
+                          <Loader2 className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 mx-auto mb-3 sm:mb-4 text-indigo-400 animate-spin" />
+                          <p className="text-base sm:text-lg font-medium text-white mb-1 sm:mb-2">
                             Processing your document...
                           </p>
-                          <p className="text-sm text-slate-400">
+                          <p className="text-xs sm:text-sm text-slate-400 truncate px-4">
                             Extracting text from {pdfFile.name}
                           </p>
                         </div>
                       ) : pdfMetadata ? (
                         // Success state
-                        <div className="border-2 border-emerald-500/30 rounded-2xl p-6 bg-emerald-500/5">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                                <CheckCircle className="w-6 h-6 text-emerald-400" />
+                        <div className="border-2 border-emerald-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-emerald-500/5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-500/20 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
                               </div>
-                              <div>
-                                <p className="font-medium text-white">{pdfMetadata.fileName}</p>
-                                <p className="text-sm text-slate-400 flex items-center gap-2 mt-1">
+                              <div className="min-w-0">
+                                <p className="font-medium text-white text-sm sm:text-base truncate">{pdfMetadata.fileName}</p>
+                                <p className="text-xs sm:text-sm text-slate-400 flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
                                   {pdfMetadata.fileType && (
                                     <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-xs">
                                       {pdfMetadata.fileType}
                                     </Badge>
                                   )}
-                                  {pdfMetadata.pages && `${pdfMetadata.pages} page(s) · `}{pdfMetadata.characters.toLocaleString()} characters extracted
+                                  <span className="truncate">{pdfMetadata.pages && `${pdfMetadata.pages} page(s) · `}{pdfMetadata.characters.toLocaleString()} chars</span>
                                 </p>
                               </div>
                             </div>
                             <button
                               onClick={handleRemoveFile}
-                              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                              className="p-1.5 sm:p-2 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0"
                             >
-                              <X className="w-5 h-5 text-slate-400" />
+                              <X className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                             </button>
                           </div>
 
                           {/* Preview of extracted text */}
-                          <div className="mt-4">
-                            <Label className="text-slate-400 text-sm">Extracted Text Preview</Label>
-                            <div className="mt-2 p-4 bg-white/[0.02] rounded-xl max-h-[200px] overflow-y-auto border border-white/5">
-                              <p className="text-sm text-slate-300 whitespace-pre-wrap">
+                          <div className="mt-3 sm:mt-4">
+                            <Label className="text-slate-400 text-xs sm:text-sm">Extracted Text Preview</Label>
+                            <div className="mt-2 p-3 sm:p-4 bg-white/[0.02] rounded-lg sm:rounded-xl max-h-[150px] sm:max-h-[200px] overflow-y-auto border border-white/5">
+                              <p className="text-xs sm:text-sm text-slate-300 whitespace-pre-wrap">
                                 {formData.content.slice(0, 1000)}
                                 {formData.content.length > 1000 && "..."}
                               </p>
@@ -435,24 +435,24 @@ export default function CreateQuizPage() {
                         </div>
                       ) : (
                         // Error state - file selected but no metadata
-                        <div className="border-2 border-red-500/30 rounded-2xl p-6 bg-red-500/5">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
-                                <X className="w-6 h-6 text-red-400" />
+                        <div className="border-2 border-red-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-red-500/5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500/20 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                                <X className="w-5 h-5 sm:w-6 sm:h-6 text-red-400" />
                               </div>
                               <div>
-                                <p className="font-medium text-white">Failed to process document</p>
-                                <p className="text-sm text-slate-400">
+                                <p className="font-medium text-white text-sm sm:text-base">Failed to process document</p>
+                                <p className="text-xs sm:text-sm text-slate-400">
                                   Please try a different file
                                 </p>
                               </div>
                             </div>
                             <button
                               onClick={handleRemoveFile}
-                              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                              className="p-1.5 sm:p-2 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0"
                             >
-                              <X className="w-5 h-5 text-slate-400" />
+                              <X className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                             </button>
                           </div>
                         </div>
@@ -460,11 +460,11 @@ export default function CreateQuizPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-4 mt-8">
+                  <div className="flex gap-3 sm:gap-4 mt-6 sm:mt-8">
                     <Button
                       onClick={() => setStep(1)}
                       variant="outline"
-                      className="flex-1 h-14 rounded-xl font-semibold border-white/10 bg-transparent text-white hover:bg-white/5"
+                      className="flex-1 h-12 sm:h-14 rounded-xl font-semibold border-white/10 bg-transparent text-white hover:bg-white/5 text-sm sm:text-base"
                       disabled={isUploadingPdf}
                     >
                       Back
@@ -472,7 +472,7 @@ export default function CreateQuizPage() {
                     <Button
                       onClick={handleNext}
                       disabled={isUploadingPdf || !formData.content.trim()}
-                      className="flex-1 bg-white text-slate-950 hover:bg-slate-100 h-14 rounded-xl font-semibold text-base disabled:opacity-50"
+                      className="flex-1 bg-white text-slate-950 hover:bg-slate-100 h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base disabled:opacity-50"
                     >
                       Continue
                     </Button>
@@ -489,14 +489,14 @@ export default function CreateQuizPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8">
-                  <h2 className="font-playfair text-2xl font-bold text-white mb-6">
+                <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 sm:p-6 md:p-8">
+                  <h2 className="font-playfair text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                     Configure Your Quiz
                   </h2>
 
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-5 md:space-y-6">
                     <div>
-                      <Label htmlFor="title" className="text-slate-300 font-medium">
+                      <Label htmlFor="title" className="text-slate-300 font-medium text-sm sm:text-base">
                         Quiz Title
                       </Label>
                       <Input
@@ -506,12 +506,12 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, title: e.target.value })
                         }
                         placeholder="e.g., Chapter 5: Data Structures"
-                        className="mt-3 bg-white/[0.02] border-white/10 text-white placeholder:text-slate-500 focus:border-white/30 h-12 rounded-xl"
+                        className="mt-2 sm:mt-3 bg-white/[0.02] border-white/10 text-white placeholder:text-slate-500 focus:border-white/30 h-11 sm:h-12 rounded-xl text-sm sm:text-base"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="subject" className="text-slate-300 font-medium">
+                      <Label htmlFor="subject" className="text-slate-300 font-medium text-sm sm:text-base">
                         Subject
                       </Label>
                       <Select
@@ -520,7 +520,7 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, subject: value })
                         }
                       >
-                        <SelectTrigger className="mt-3 bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
+                        <SelectTrigger className="mt-2 sm:mt-3 bg-white/[0.02] border-white/10 text-white h-11 sm:h-12 rounded-xl text-sm sm:text-base">
                           <SelectValue placeholder="Select a subject" />
                         </SelectTrigger>
                         <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
@@ -540,7 +540,7 @@ export default function CreateQuizPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="questionCount" className="text-slate-300 font-medium">
+                      <Label htmlFor="questionCount" className="text-slate-300 font-medium text-sm sm:text-base">
                         Number of Questions
                       </Label>
                       <Select
@@ -549,7 +549,7 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, questionCount: parseInt(value) })
                         }
                       >
-                        <SelectTrigger className="mt-3 bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
+                        <SelectTrigger className="mt-2 sm:mt-3 bg-white/[0.02] border-white/10 text-white h-11 sm:h-12 rounded-xl text-sm sm:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
@@ -562,68 +562,68 @@ export default function CreateQuizPage() {
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-medium mb-4 block">
+                      <Label className="text-slate-300 font-medium mb-3 sm:mb-4 block text-sm sm:text-base">
                         Difficulty Level
                       </Label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, difficulty: "easy" })}
-                          className={`p-4 rounded-2xl border-2 transition-all ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
                             formData.difficulty === "easy"
                               ? "border-emerald-500 bg-emerald-500/10"
                               : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
-                          <Zap className={`w-6 h-6 mx-auto mb-2 ${
+                          <Zap className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1.5 sm:mb-2 ${
                             formData.difficulty === "easy" ? "text-emerald-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-semibold ${
+                          <p className={`text-xs sm:text-sm font-semibold ${
                             formData.difficulty === "easy" ? "text-emerald-400" : "text-slate-300"
                           }`}>Easy</p>
-                          <p className="text-xs text-slate-500 mt-1">Basic recall</p>
+                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 hidden sm:block">Basic recall</p>
                         </button>
                         
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, difficulty: "medium" })}
-                          className={`p-4 rounded-2xl border-2 transition-all ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
                             formData.difficulty === "medium"
                               ? "border-amber-500 bg-amber-500/10"
                               : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
-                          <Flame className={`w-6 h-6 mx-auto mb-2 ${
+                          <Flame className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1.5 sm:mb-2 ${
                             formData.difficulty === "medium" ? "text-amber-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-semibold ${
+                          <p className={`text-xs sm:text-sm font-semibold ${
                             formData.difficulty === "medium" ? "text-amber-400" : "text-slate-300"
                           }`}>Medium</p>
-                          <p className="text-xs text-slate-500 mt-1">Understanding</p>
+                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 hidden sm:block">Understanding</p>
                         </button>
                         
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, difficulty: "hard" })}
-                          className={`p-4 rounded-2xl border-2 transition-all ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
                             formData.difficulty === "hard"
                               ? "border-red-500 bg-red-500/10"
                               : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
-                          <Trophy className={`w-6 h-6 mx-auto mb-2 ${
+                          <Trophy className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1.5 sm:mb-2 ${
                             formData.difficulty === "hard" ? "text-red-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-semibold ${
+                          <p className={`text-xs sm:text-sm font-semibold ${
                             formData.difficulty === "hard" ? "text-red-400" : "text-slate-300"
                           }`}>Hard</p>
-                          <p className="text-xs text-slate-500 mt-1">Application</p>
+                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 hidden sm:block">Application</p>
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-medium mb-3 block">
+                      <Label className="text-slate-300 font-medium mb-2 sm:mb-3 block text-sm sm:text-base">
                         Question Type
                       </Label>
                       <Select
@@ -632,7 +632,7 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, questionTypes: [value] })
                         }
                       >
-                        <SelectTrigger className="bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
+                        <SelectTrigger className="bg-white/[0.02] border-white/10 text-white h-11 sm:h-12 rounded-xl text-sm sm:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
@@ -645,62 +645,62 @@ export default function CreateQuizPage() {
 
                     {/* Timer Settings */}
                     <div>
-                      <Label className="text-slate-300 font-medium mb-4 block">
+                      <Label className="text-slate-300 font-medium mb-3 sm:mb-4 block text-sm sm:text-base">
                         Timer Settings
                       </Label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, timerMode: "none" })}
-                          className={`p-4 rounded-2xl border-2 transition-all ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
                             formData.timerMode === "none"
                               ? "border-white bg-white/5"
                               : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
-                          <TimerOff className={`w-6 h-6 mx-auto mb-2 ${
+                          <TimerOff className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1.5 sm:mb-2 ${
                             formData.timerMode === "none" ? "text-white" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-semibold ${
+                          <p className={`text-xs sm:text-sm font-semibold ${
                             formData.timerMode === "none" ? "text-white" : "text-slate-400"
                           }`}>No Timer</p>
-                          <p className="text-xs text-slate-500 mt-1">Relaxed</p>
+                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 hidden sm:block">Relaxed</p>
                         </button>
                         
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, timerMode: "quiz", timeLimit: 10 })}
-                          className={`p-4 rounded-2xl border-2 transition-all ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
                             formData.timerMode === "quiz"
                               ? "border-indigo-500 bg-indigo-500/10"
                               : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
-                          <Clock className={`w-6 h-6 mx-auto mb-2 ${
+                          <Clock className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1.5 sm:mb-2 ${
                             formData.timerMode === "quiz" ? "text-indigo-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-semibold ${
+                          <p className={`text-xs sm:text-sm font-semibold ${
                             formData.timerMode === "quiz" ? "text-indigo-400" : "text-slate-300"
                           }`}>Per Quiz</p>
-                          <p className="text-xs text-slate-500 mt-1">Total time</p>
+                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 hidden sm:block">Total time</p>
                         </button>
                         
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, timerMode: "question", timeLimit: 30 })}
-                          className={`p-4 rounded-2xl border-2 transition-all ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
                             formData.timerMode === "question"
                               ? "border-orange-500 bg-orange-500/10"
                               : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
-                          <Timer className={`w-6 h-6 mx-auto mb-2 ${
+                          <Timer className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1.5 sm:mb-2 ${
                             formData.timerMode === "question" ? "text-orange-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-semibold ${
+                          <p className={`text-xs sm:text-sm font-semibold ${
                             formData.timerMode === "question" ? "text-orange-400" : "text-slate-300"
-                          }`}>Per Question</p>
-                          <p className="text-xs text-slate-500 mt-1">Time each</p>
+                          }`}>Per Q</p>
+                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 hidden sm:block">Time each</p>
                         </button>
                       </div>
 
@@ -712,9 +712,9 @@ export default function CreateQuizPage() {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="mt-4 overflow-hidden"
+                            className="mt-3 sm:mt-4 overflow-hidden"
                           >
-                            <Label className="text-slate-400 text-sm mb-3 block">
+                            <Label className="text-slate-400 text-xs sm:text-sm mb-2 sm:mb-3 block">
                               {formData.timerMode === "quiz" ? "Total Quiz Time" : "Time Per Question"}
                             </Label>
                             <Select
@@ -723,7 +723,7 @@ export default function CreateQuizPage() {
                                 setFormData({ ...formData, timeLimit: parseInt(value) })
                               }
                             >
-                              <SelectTrigger className="bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
+                              <SelectTrigger className="bg-white/[0.02] border-white/10 text-white h-11 sm:h-12 rounded-xl text-sm sm:text-base">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
@@ -752,11 +752,11 @@ export default function CreateQuizPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-4 mt-8">
+                  <div className="flex gap-3 sm:gap-4 mt-6 sm:mt-8">
                     <Button
                       onClick={() => setStep(2)}
                       variant="outline"
-                      className="flex-1 h-14 rounded-xl font-semibold border-white/10 bg-transparent text-white hover:bg-white/5"
+                      className="flex-1 h-12 sm:h-14 rounded-xl font-semibold border-white/10 bg-transparent text-white hover:bg-white/5 text-sm sm:text-base"
                       disabled={isGenerating}
                     >
                       Back
@@ -764,17 +764,19 @@ export default function CreateQuizPage() {
                     <Button
                       onClick={handleNext}
                       disabled={isGenerating}
-                      className="flex-1 bg-white text-slate-950 hover:bg-slate-100 h-14 rounded-xl font-semibold text-base disabled:opacity-50"
+                      className="flex-1 bg-white text-slate-950 hover:bg-slate-100 h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base disabled:opacity-50"
                     >
                       {isGenerating ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating...
+                          <span className="hidden sm:inline">Generating...</span>
+                          <span className="sm:hidden">...</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4 mr-2" />
-                          Generate Quiz
+                          <span className="hidden sm:inline">Generate Quiz</span>
+                          <span className="sm:hidden">Generate</span>
                         </>
                       )}
                     </Button>
