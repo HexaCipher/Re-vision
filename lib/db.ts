@@ -33,6 +33,9 @@ interface DbQuiz {
   source_type: 'text' | 'pdf';
   source_content: string;
   questions: Question[];
+  difficulty?: 'easy' | 'medium' | 'hard';
+  timer_mode?: 'none' | 'quiz' | 'question';
+  time_limit?: number;
   created_at: string;
   share_code?: string;
   is_public?: boolean;
@@ -61,11 +64,10 @@ export async function createQuiz(data: {
   sourceType: 'text' | 'pdf';
   sourceContent: string;
   questions: Question[];
+  difficulty?: 'easy' | 'medium' | 'hard';
+  timerMode?: 'none' | 'quiz' | 'question';
+  timeLimit?: number;
 }) {
-  console.log("createQuiz called with userId:", data.userId);
-  console.log("Quiz title:", data.title);
-  console.log("Number of questions:", data.questions.length);
-  
   try {
     const docRef = await addDoc(quizzesCollection, {
       user_id: data.userId,
@@ -74,10 +76,11 @@ export async function createQuiz(data: {
       source_type: data.sourceType,
       source_content: data.sourceContent,
       questions: data.questions,
+      difficulty: data.difficulty || 'medium',
+      timer_mode: data.timerMode || 'none',
+      time_limit: data.timeLimit ?? 10,
       created_at: Timestamp.now(),
     });
-
-    console.log("Quiz created successfully with ID:", docRef.id);
 
     // Return the created quiz with its ID
     return {
@@ -88,14 +91,13 @@ export async function createQuiz(data: {
       source_type: data.sourceType,
       source_content: data.sourceContent,
       questions: data.questions,
+      difficulty: data.difficulty || 'medium',
+      timer_mode: data.timerMode || 'none',
+      time_limit: data.timeLimit ?? 10,
       created_at: new Date().toISOString(),
     };
   } catch (error) {
     console.error("Error in createQuiz:", error);
-    if (error instanceof Error) {
-      console.error("Error message:", error.message);
-      console.error("Error code:", (error as any).code);
-    }
     throw error;
   }
 }
@@ -120,6 +122,9 @@ export async function getQuizzesByUser(userId: string): Promise<DbQuiz[]> {
         source_type: data.source_type,
         source_content: data.source_content,
         questions: data.questions,
+        difficulty: data.difficulty,
+        timer_mode: data.timer_mode,
+        time_limit: data.time_limit,
         created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
       };
     });
@@ -143,6 +148,9 @@ export async function getQuizzesByUser(userId: string): Promise<DbQuiz[]> {
         source_type: data.source_type,
         source_content: data.source_content,
         questions: data.questions,
+        difficulty: data.difficulty,
+        timer_mode: data.timer_mode,
+        time_limit: data.time_limit,
         created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
       };
     });
@@ -173,6 +181,9 @@ export async function getQuizById(quizId: string): Promise<DbQuiz> {
     source_type: data.source_type,
     source_content: data.source_content,
     questions: data.questions,
+    difficulty: data.difficulty,
+    timer_mode: data.timer_mode,
+    time_limit: data.time_limit,
     created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
   };
 }
@@ -332,6 +343,9 @@ export async function getQuizByShareCode(shareCode: string): Promise<DbQuiz | nu
     source_type: data.source_type,
     source_content: data.source_content,
     questions: data.questions,
+    difficulty: data.difficulty,
+    timer_mode: data.timer_mode,
+    time_limit: data.time_limit,
     created_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
     share_code: data.share_code,
     is_public: data.is_public,

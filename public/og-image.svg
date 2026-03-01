@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f"/>
+      <stop offset="40%" style="stop-color:#0f1117"/>
+      <stop offset="70%" style="stop-color:#111827"/>
+      <stop offset="100%" style="stop-color:#0c1020"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="4" y="4" width="1192" height="622" rx="16" stroke="white" stroke-opacity="0.06" stroke-width="2"/>
+  <!-- Logo icon: white box with BookSpark icon inside -->
+  <rect x="80" y="205" width="80" height="80" rx="20" fill="white"/>
+  <!-- Book left page -->
+  <path d="M120 274C120 274 99 267 99 250V236C107 236 114 239 120 244" stroke="#0a0a0f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Book right page -->
+  <path d="M120 274C120 274 141 267 141 250V236C133 236 126 239 120 244" stroke="#0a0a0f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Spine -->
+  <line x1="120" y1="244" x2="120" y2="274" stroke="#0a0a0f" stroke-width="4" stroke-linecap="round"/>
+  <!-- Spark -->
+  <path d="M124 215L116 226H122L114 238" stroke="#0a0a0f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Title -->
+  <text x="194" y="250" font-family="Georgia, serif" font-weight="700" font-size="56" fill="white">Re-vision</text>
+  <text x="194" y="279" font-family="Inter, system-ui, sans-serif" font-weight="400" font-size="22" fill="#94a3b8">Transform your notes into interactive quizzes</text>
+  <!-- Tagline -->
+  <text x="80" y="400" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="28" fill="#818cf8">AI-powered study tool</text>
+  <text x="80" y="440" font-family="Inter, system-ui, sans-serif" font-weight="400" font-size="20" fill="#64748b">Upload notes. Generate quizzes. Master any subject.</text>
+</svg>

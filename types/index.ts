@@ -18,6 +18,9 @@ export interface Quiz {
   sourceType: 'text' | 'pdf';
   sourceContent: string;
   questions: Question[];
+  difficulty?: 'easy' | 'medium' | 'hard';
+  timerMode?: 'none' | 'quiz' | 'question';
+  timeLimit?: number;
   createdAt: string;
 }
 

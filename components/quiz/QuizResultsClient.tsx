@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Trophy, Target, ArrowRight, RotateCcw, Home, TrendingUp, TrendingDown, Minus, History } from "lucide-react";
+import { Trophy, Target, ArrowRight, RotateCcw, Home, TrendingUp, TrendingDown, Minus, History } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Question } from "@/types";
 import { PageTransition, FadeIn, ScaleIn } from "@/components/ui/PageTransition";
+import { AppLogo } from "@/components/ui/AppLogo";
 
 interface AttemptHistory {
   score: number;
@@ -160,11 +161,8 @@ export default function QuizResultsClient({
           animate={{ opacity: 1, x: 0 }}
         >
           <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 group">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-            </div>
-            <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
-          </Link>
+              <AppLogo size="md" />
+            </Link>
         </motion.div>
       </nav>
 
@@ -281,7 +279,7 @@ export default function QuizResultsClient({
                   {previousBest !== null ? (
                     <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" />
                   ) : (
-                    <Brain className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" />
+                    <Target className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" />
                   )}
                 </div>
                 <div>

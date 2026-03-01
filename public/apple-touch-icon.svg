@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <rect width="180" height="180" rx="40" fill="#0a0a0f"/>
+  <!-- Open book left page -->
+  <path d="M90 132C90 132 48 117 48 73V38C66 38 82 44 90 53" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right page -->
+  <path d="M90 132C90 132 132 117 132 73V38C114 38 98 44 90 53" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Spine -->
+  <line x1="90" y1="53" x2="90" y2="132" stroke="white" stroke-width="9" stroke-linecap="round"/>
+  <!-- Spark -->
+  <path d="M98 14L82 38H94L78 62" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

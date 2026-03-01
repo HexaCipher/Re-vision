@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Users, BookOpen, Play, Loader2 } from "lucide-react";
+import { Users, BookOpen, Play, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
 import { PageTransition, FadeIn, ScaleIn } from "@/components/ui/PageTransition";
 import { QuizLoader } from "@/components/ui/QuizLoader";
+import { AppLogo } from "@/components/ui/AppLogo";
 
 interface SharedQuiz {
   id: string;
@@ -82,7 +83,7 @@ export default function SharedQuizPage() {
         />
         <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6 sm:p-8 max-w-md text-center">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-500/15 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-            <Brain className="w-7 h-7 sm:w-8 sm:h-8 text-red-400" />
+            <BookOpen className="w-7 h-7 sm:w-8 sm:h-8 text-red-400" />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Quiz Not Found</h1>
           <p className="text-slate-400 mb-6 text-sm sm:text-base">
@@ -109,11 +110,8 @@ export default function SharedQuizPage() {
       <nav className="border-b border-white/5 backdrop-blur-2xl bg-black/40">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group w-fit">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-            </div>
-            <span className="text-lg sm:text-xl font-bold text-white">Re-vision</span>
-          </Link>
+              <AppLogo size="md" />
+            </Link>
         </div>
       </nav>
 

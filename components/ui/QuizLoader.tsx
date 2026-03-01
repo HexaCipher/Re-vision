@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain } from "lucide-react";
+import { AppLogo, AppIcon } from "@/components/ui/AppLogo";
 import { useState, useEffect } from "react";
 
 const NOTE_LINES = [
@@ -116,7 +116,7 @@ export function QuizLoader({ message }: QuizLoaderProps) {
             ))}
           </div>
 
-          {/* Brain — the AI core */}
+            {/* Logo icon — the AI core */}
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -136,14 +136,13 @@ export function QuizLoader({ message }: QuizLoaderProps) {
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
             />
 
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center backdrop-blur-xl relative">
-              <motion.div
-                animate={{ rotate: [0, 8, -8, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Brain className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-400" />
-              </motion.div>
-            </div>
+            <motion.div
+              className="relative"
+              animate={{ rotate: [0, 8, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <AppIcon size="lg" />
+            </motion.div>
           </motion.div>
 
           {/* Arrow particles flowing right */}
@@ -219,17 +218,8 @@ export function QuizLoader({ message }: QuizLoaderProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="flex items-center gap-2.5"
         >
-          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center">
-            <Brain className="w-4 h-4 text-slate-950" />
-          </div>
-          <span
-            className="text-white font-bold text-lg tracking-tight"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
-            Re-vision
-          </span>
+          <AppLogo size="sm" />
         </motion.div>
 
         {/* Cycling message */}

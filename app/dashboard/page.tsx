@@ -17,31 +17,22 @@ export default async function DashboardPage() {
     subject: string;
     created_at?: string;
     questions: any;
+    difficulty?: string;
   }> = [];
   let stats = { totalQuizzes: 0, totalAttempts: 0, bestScore: 0 };
 
   try {
-    console.log("=== DASHBOARD DEBUG ===");
-    console.log("Current Clerk user ID:", user.id);
-    console.log("User email:", user.emailAddresses[0]?.emailAddress);
     const dbQuizzes = await getQuizzesByUser(user.id);
-    console.log("Found quizzes for this user:", dbQuizzes.length);
     quizzes = dbQuizzes.map((q) => ({
       id: q.id,
       title: q.title,
       subject: q.subject,
       created_at: q.created_at,
       questions: q.questions,
+      difficulty: q.difficulty,
     }));
     stats = await getUserStats(user.id);
-    console.log("User stats:", stats);
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
-    // Log the full error for debugging
-    if (error instanceof Error) {
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-    }
     // Continue with empty data rather than crashing
   }
 

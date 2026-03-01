@@ -65,12 +65,22 @@ export default function QuizReviewPage() {
       const quizData = await quizRes.json();
       setQuiz(quizData);
 
-      // Fetch latest attempt
-      const attemptsRes = await fetch(`/api/quizzes/${quizId}/attempts`);
-      if (attemptsRes.ok) {
-        const attempts = await attemptsRes.json();
-        if (attempts.length > 0) {
-          setUserAnswers(attempts[0].answers || {});
+      // Fetch latest attempt — try sessionStorage first, then API
+      const storedAttempt = sessionStorage.getItem(`attempt-${quizId}`);
+      if (storedAttempt) {
+        try {
+          const attemptData = JSON.parse(storedAttempt);
+          setUserAnswers(attemptData.answers || {});
+        } catch {
+          // fall through to API
+        }
+      } else {
+        const attemptsRes = await fetch(`/api/attempts?quizId=${quizId}`);
+        if (attemptsRes.ok) {
+          const attempts = await attemptsRes.json();
+          if (attempts.length > 0) {
+            setUserAnswers(attempts[0].answers || {});
+          }
         }
       }
     } catch (e) {

@@ -2,12 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight, Brain, Upload, Sparkles, Trophy,
-  CheckCircle2, Circle, BookOpen, Zap, Target, Clock, TrendingUp, FileText,
+  ArrowRight, Upload, Sparkles, Trophy, Zap,
+  CheckCircle2, Circle, BookOpen, Target, Clock, TrendingUp, FileText,
   Menu, X,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { AppLogo } from "@/components/ui/AppLogo";
 import { useRef, useEffect, useState } from "react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -25,7 +26,7 @@ const steps = [
     body: "Gemini analyzes your content and creates targeted, challenging questions that test real understanding in under 10 seconds.",
   },
   {
-    icon: Brain,
+    icon: Zap,
     number: "03",
     title: "Take the quiz & learn",
     body: "Answer questions with instant feedback. See what you know, identify gaps, and build lasting memory through active recall.",
@@ -127,7 +128,7 @@ function QuizWidget() {
         <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-white/8 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300" />
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300" />
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-white truncate">Biology — Cell Division</p>
@@ -366,10 +367,7 @@ export default function LandingPage() {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 sm:gap-3"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white flex items-center justify-center">
-            <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-          </div>
-          <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
+          <AppLogo size="md" />
         </motion.div>
 
         {/* Desktop nav */}
@@ -775,10 +773,7 @@ export default function LandingPage() {
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="py-8 sm:py-12 px-4 sm:px-6 md:px-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm sm:text-base text-slate-500">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 flex items-center justify-center">
-            <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
-          </div>
-          <span className="font-semibold">Re-vision</span>
+          <AppLogo size="sm" />
         </div>
         <span className="text-center sm:text-right">Built for students who want to learn better.</span>
       </footer>

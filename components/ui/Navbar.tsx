@@ -1,6 +1,7 @@
 "use client";
 
-import { Brain, LogOut, Menu, X, LayoutDashboard, Home } from "lucide-react";
+import { LogOut, Menu, X, LayoutDashboard } from "lucide-react";
+import { AppLogo } from "@/components/ui/AppLogo";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -41,18 +42,12 @@ export function Navbar({ user, showBackButton, backHref = "/dashboard", backLabe
           className="flex items-center gap-2 sm:gap-3"
         >
           {showBackButton ? (
-            <Link href={backHref} className="flex items-center gap-2 sm:gap-3 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-              </div>
-              <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
+            <Link href={backHref} className="flex items-center group">
+              <AppLogo size="md" />
             </Link>
           ) : (
-            <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-              </div>
-              <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
+            <Link href="/dashboard" className="flex items-center group">
+              <AppLogo size="md" />
             </Link>
           )}
         </motion.div>
@@ -199,11 +194,8 @@ export function SimpleNavbar({ showBack = false, backHref = "/dashboard" }: { sh
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Link href={showBack ? backHref : "/dashboard"} className="flex items-center gap-2 sm:gap-3 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-            </div>
-            <span className="text-white font-bold tracking-tight text-lg sm:text-xl">Re-vision</span>
+          <Link href={showBack ? backHref : "/dashboard"} className="flex items-center group">
+            <AppLogo size="md" />
           </Link>
         </motion.div>
 

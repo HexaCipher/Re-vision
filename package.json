@@ -12,13 +12,10 @@
     "@clerk/nextjs": "^6.39.0",
     "@clerk/themes": "^2.4.57",
     "@google/generative-ai": "^0.24.1",
-    "@vercel/blob": "^2.3.0",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
     "firebase": "^12.10.0",
-    "firebase-admin": "^13.7.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
     "mammoth": "^1.11.0",
@@ -26,12 +23,10 @@
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
-    "react-confetti": "^6.4.0",
     "react-dom": "19.2.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "unpdf": "^1.4.0",
-    "zod": "^4.3.6"
+    "unpdf": "^1.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

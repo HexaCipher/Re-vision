@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Brain, Clock, ChevronRight, ChevronLeft, AlertTriangle } from "lucide-react";
+import { Clock, ChevronRight, ChevronLeft, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Question } from "@/types";
 import { toast } from "sonner";
 import Link from "next/link";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { AppIcon } from "@/components/ui/AppLogo";
 
 interface QuizTakingClientProps {
   quiz: {
@@ -41,6 +42,17 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
     return 0;
   });
   const hasAutoSubmittedRef = useRef(false);
+
+  // Prevent accidental navigation away during quiz
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isSubmitting) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isSubmitting]);
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
@@ -218,10 +230,8 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
           className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1"
         >
           <Link href="/dashboard" className="flex items-center gap-3 group flex-shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-              <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
-            </div>
-          </Link>
+              <AppIcon size="md" />
+            </Link>
           <div className="min-w-0 flex-1">
             <h1 className="text-sm sm:text-lg font-bold text-white truncate">{quiz.title}</h1>
             <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 font-medium text-xs">

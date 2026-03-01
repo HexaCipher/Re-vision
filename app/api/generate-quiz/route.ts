@@ -74,18 +74,15 @@ function resolveCorrectAnswer(raw: string, options?: string[]): string {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
-  console.log("=== QUIZ GENERATION API CALLED ===");
-
   try {
     let body: Record<string, unknown>;
     try {
       body = await request.json();
     } catch (parseError) {
-      console.error("Failed to parse request body:", parseError);
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const { userId, title, subject, content, questionCount, questionTypes, difficulty } = body as {
+    const { userId, title, subject, content, questionCount, questionTypes, difficulty, sourceType, timerMode, timeLimit } = body as {
       userId: string;
       title: string;
       subject: string;
@@ -93,6 +90,9 @@ export async function POST(request: NextRequest) {
       questionCount: number;
       questionTypes: string[];
       difficulty: string;
+      sourceType?: string;
+      timerMode?: string;
+      timeLimit?: number;
     };
 
     if (!userId || !title || !subject || !content || !questionCount) {
@@ -101,18 +101,14 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.error("GEMINI_API_KEY is not set");
       return NextResponse.json({ error: "API configuration error" }, { status: 500 });
     }
-
-    console.log("Starting quiz generation, content length:", String(content).length);
 
     const questionType = (questionTypes as string[])[0] || "mcq";
     const difficultyLevel = difficulty || "medium";
 
     const prompt = generatePrompt(String(content), Number(questionCount), questionType, difficultyLevel);
 
-    console.log("Calling Gemini API...");
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
@@ -127,12 +123,9 @@ export async function POST(request: NextRequest) {
     const result = await model.generateContent(prompt);
     const rawText = result.response.text();
 
-    console.log("Gemini response length:", rawText.length);
-
     // --- Parse JSON ---
     const jsonString = extractJsonArray(rawText);
     if (!jsonString) {
-      console.error("Could not extract JSON array from Gemini response. Raw text snippet:", rawText.slice(0, 500));
       return NextResponse.json({ error: "AI returned an unexpected format. Please try again." }, { status: 500 });
     }
 
@@ -140,13 +133,10 @@ export async function POST(request: NextRequest) {
     try {
       parsedQuestions = JSON.parse(jsonString);
     } catch (jsonErr) {
-      console.error("JSON.parse failed:", jsonErr);
-      console.error("JSON string snippet:", jsonString.slice(0, 500));
       return NextResponse.json({ error: "AI returned malformed JSON. Please try again." }, { status: 500 });
     }
 
     if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
-      console.error("Parsed result is not a non-empty array:", parsedQuestions);
       return NextResponse.json({ error: "AI did not return any questions. Please try again." }, { status: 500 });
     }
 
@@ -173,7 +163,6 @@ export async function POST(request: NextRequest) {
     // Validate that every question has the minimum required fields
     for (const q of questions) {
       if (!q.question || !q.correctAnswer) {
-        console.error("Invalid question object:", q);
         return NextResponse.json(
           { error: "AI returned incomplete question data. Please try again." },
           { status: 500 }
@@ -182,31 +171,28 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Save to Firestore ---
-    console.log("Saving quiz to Firebase...");
     try {
+      const resolvedSourceType = (sourceType === "pdf" ? "pdf" : "text") as "text" | "pdf";
       const quiz = await createQuiz({
         userId: String(userId),
         title: String(title),
         subject: String(subject),
-        sourceType: "text",
+        sourceType: resolvedSourceType,
         sourceContent: String(content),
         questions,
+        difficulty: (difficultyLevel as 'easy' | 'medium' | 'hard') || 'medium',
+        timerMode: (timerMode as 'none' | 'quiz' | 'question') || 'none',
+        timeLimit: timeLimit ?? 10,
       });
 
-      console.log("Quiz saved successfully:", quiz.id);
       return NextResponse.json({ quizId: quiz.id, questions });
     } catch (dbError: any) {
-      console.error("Firebase save failed:", dbError?.message ?? dbError);
-      console.error("Firebase error code:", dbError?.code);
-      console.error("Full Firebase error:", JSON.stringify(dbError, null, 2));
       return NextResponse.json(
         { error: "Failed to save quiz to database. Please try again." },
         { status: 500 }
       );
     }
   } catch (error: any) {
-    console.error("Unexpected error in generate-quiz route:", error?.message ?? error);
-    console.error("Stack:", error?.stack);
     return NextResponse.json(
       { error: error?.message || "Failed to generate quiz" },
       { status: 500 }

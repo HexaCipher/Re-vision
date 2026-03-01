@@ -14,13 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Brain, FileText, Upload, Sparkles, Loader2, Zap, Flame, Trophy, Clock, Timer, TimerOff, X, CheckCircle, FileUp } from "lucide-react";
+import { FileText, Upload, Sparkles, Loader2, Zap, Flame, Trophy, Clock, Timer, TimerOff, X, CheckCircle, FileUp } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import { PageTransition, FadeIn } from "@/components/ui/PageTransition";
 import { Navbar } from "@/components/ui/Navbar";
+import { AppIcon } from "@/components/ui/AppLogo";
+import { QuizLoader } from "@/components/ui/QuizLoader";
 
 export default function CreateQuizPage() {
   const router = useRouter();
@@ -93,7 +95,6 @@ export default function CreateQuizPage() {
       const pageInfo = data.metadata.pages ? ` from ${data.metadata.pages} page(s)` : "";
       toast.success(`Extracted ${data.metadata.characters.toLocaleString()} characters${pageInfo}`);
     } catch (error: unknown) {
-      console.error("Document upload error:", error);
       toast.error(error instanceof Error ? error.message : "Failed to process document");
       setPdfFile(null);
     } finally {
@@ -140,15 +141,6 @@ export default function CreateQuizPage() {
 
     setIsGenerating(true);
     try {
-      console.log("Sending quiz generation request...", {
-        userId: user.id,
-        title: formData.title,
-        subject: formData.subject,
-        contentLength: formData.content.length,
-        questionCount: formData.questionCount,
-        questionTypes: formData.questionTypes,
-      });
-      
       const response = await fetch("/api/generate-quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,13 +152,13 @@ export default function CreateQuizPage() {
           questionCount: formData.questionCount,
           questionTypes: formData.questionTypes,
           difficulty: formData.difficulty,
+          sourceType: inputType,
+          timerMode: formData.timerMode,
+          timeLimit: formData.timeLimit,
         }),
       });
 
-      console.log("Response status:", response.status);
-      
       const data = await response.json();
-      console.log("Response data:", data);
       
       if (!response.ok) {
         throw new Error(data.error || "Failed to generate quiz");
@@ -189,7 +181,6 @@ export default function CreateQuizPage() {
       
       router.push(`/quiz/${data.quizId}/take`);
     } catch (error: unknown) {
-      console.error("Quiz generation error:", error);
       toast.error(error instanceof Error ? error.message : "Failed to generate quiz");
       setIsGenerating(false);
     }
@@ -200,6 +191,10 @@ export default function CreateQuizPage() {
     email: user.primaryEmailAddress?.emailAddress || "",
     imageUrl: user.imageUrl,
   } : undefined;
+
+  if (isGenerating) {
+    return <QuizLoader />;
+  }
 
   return (
     <PageTransition className="min-h-screen bg-[#0a0a0a]">
@@ -220,8 +215,8 @@ export default function CreateQuizPage() {
           {/* Header - responsive sizing */}
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <FadeIn>
-              <div className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <Brain className="w-6 h-6 sm:w-7 md:w-8 sm:h-7 md:h-8 text-slate-950" />
+              <div className="flex justify-center mb-4 sm:mb-6">
+                <AppIcon size="lg" />
               </div>
             </FadeIn>
             <FadeIn delay={0.1}>

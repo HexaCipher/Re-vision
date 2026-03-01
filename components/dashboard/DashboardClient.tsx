@@ -28,6 +28,7 @@ interface Quiz {
   created_at?: string;
   createdAt?: string;
   questions: any;
+  difficulty?: string;
 }
 
 interface DashboardClientProps {
@@ -51,6 +52,7 @@ export default function DashboardClient({
   stats: serverStats,
 }: DashboardClientProps) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [allQuizzes, setAllQuizzes] = useState<Quiz[]>(serverQuizzes);
   const [stats, setStats] = useState(serverStats);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -68,6 +70,16 @@ export default function DashboardClient({
   }, [serverQuizzes, serverStats]);
 
   const handleDeleteQuiz = async (quizId: string) => {
+    // First click: show confirmation
+    if (deleteConfirmId !== quizId) {
+      setDeleteConfirmId(quizId);
+      // Auto-clear after 3 seconds
+      setTimeout(() => setDeleteConfirmId((prev) => (prev === quizId ? null : prev)), 3000);
+      return;
+    }
+
+    // Second click: actually delete
+    setDeleteConfirmId(null);
     setIsDeleting(quizId);
     try {
       const response = await fetch(`/api/quizzes/${quizId}`, {
@@ -210,9 +222,20 @@ export default function DashboardClient({
                     <SpotlightCard className="p-4 sm:p-5 md:p-6 h-full backdrop-blur-md bg-white/[0.02] border-white/10 rounded-xl sm:rounded-2xl hover:border-white/20 transition-colors duration-300">
                       <div className="flex flex-col h-full">
                         <div className="flex justify-between items-start mb-3 sm:mb-4">
-                          <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 hover:bg-indigo-500/20 font-medium text-xs sm:text-sm">
-                            {quiz.subject}
-                          </Badge>
+                          <div className="flex gap-1.5 items-center flex-wrap">
+                            <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 hover:bg-indigo-500/20 font-medium text-xs sm:text-sm">
+                              {quiz.subject}
+                            </Badge>
+                            {quiz.difficulty && quiz.difficulty !== "medium" && (
+                              <Badge className={`font-medium text-xs ${
+                                quiz.difficulty === "easy"
+                                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/25"
+                                  : "bg-red-500/15 text-red-400 border-red-500/25"
+                              }`}>
+                                {quiz.difficulty.charAt(0).toUpperCase() + quiz.difficulty.slice(1)}
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex gap-0.5 sm:gap-1">
                             {/* Share button */}
                             <Button
@@ -227,12 +250,20 @@ export default function DashboardClient({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg sm:rounded-xl h-8 w-8 sm:h-9 sm:w-9 transition-all duration-200"
+                              className={`rounded-lg sm:rounded-xl h-8 w-8 sm:h-9 sm:w-9 transition-all duration-200 ${
+                                deleteConfirmId === quiz.id
+                                  ? "text-red-400 bg-red-500/15 hover:bg-red-500/25"
+                                  : "text-slate-500 hover:text-red-400 hover:bg-red-500/10"
+                              }`}
                               onClick={() => handleDeleteQuiz(quiz.id)}
                               disabled={isDeleting === quiz.id}
-                              title="Delete quiz"
+                              title={deleteConfirmId === quiz.id ? "Click again to confirm delete" : "Delete quiz"}
                             >
-                              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              {deleteConfirmId === quiz.id ? (
+                                <span className="text-[10px] sm:text-xs font-bold">?</span>
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              )}
                             </Button>
                           </div>
                         </div>
