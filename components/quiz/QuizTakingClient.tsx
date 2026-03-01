@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -14,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Question } from "@/types";
 import { toast } from "sonner";
 import Link from "next/link";
+import { PageTransition } from "@/components/ui/PageTransition";
 
 interface QuizTakingClientProps {
   quiz: {
@@ -22,7 +21,7 @@ interface QuizTakingClientProps {
     subject: string;
     questions: Question[];
     timerMode?: "none" | "quiz" | "question";
-    timeLimit?: number; // minutes for quiz mode, seconds for question mode
+    timeLimit?: number;
   };
   userId: string;
 }
@@ -34,12 +33,11 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Timer state
   const timerMode = quiz.timerMode || "none";
   const timeLimit = quiz.timeLimit || 10;
   const [timeRemaining, setTimeRemaining] = useState(() => {
-    if (timerMode === "quiz") return timeLimit * 60; // Convert minutes to seconds
-    if (timerMode === "question") return timeLimit; // Already in seconds
+    if (timerMode === "quiz") return timeLimit * 60;
+    if (timerMode === "question") return timeLimit;
     return 0;
   });
   const hasAutoSubmittedRef = useRef(false);
@@ -48,31 +46,25 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
 
-  // Calculate warning thresholds
   const getWarningThreshold = () => {
-    if (timerMode === "quiz") return 60; // 1 minute warning for quiz mode
-    if (timerMode === "question") return Math.min(10, timeLimit * 0.3); // 10 seconds or 30% of time
+    if (timerMode === "quiz") return 60;
+    if (timerMode === "question") return Math.min(10, timeLimit * 0.3);
     return 0;
   };
   const warningThreshold = getWarningThreshold();
   const isTimeWarning = timerMode !== "none" && timeRemaining <= warningThreshold && timeRemaining > 0;
   const isTimeUp = timerMode !== "none" && timeRemaining <= 0;
 
-  // Timer for "none" mode (elapsed time counter)
   useEffect(() => {
     if (timerMode !== "none") return;
-    
     const interval = setInterval(() => {
       setTimeElapsed((prev) => prev + 1);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [timerMode]);
 
-  // Timer for countdown modes (quiz/question)
   useEffect(() => {
     if (timerMode === "none" || isSubmitting) return;
-
     const interval = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -82,11 +74,9 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, [timerMode, isSubmitting]);
 
-  // Reset question timer when changing questions in "question" mode
   useEffect(() => {
     if (timerMode === "question") {
       setTimeRemaining(timeLimit);
@@ -107,62 +97,14 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
   };
 
   const handleAnswerChange = (value: string) => {
-    setAnswers({
-      ...answers,
-      [currentQuestion.id]: value,
-    });
+    setAnswers({ ...answers, [currentQuestion.id]: value });
   };
 
-  // Auto-advance for question mode when time runs out
-  const handleQuestionTimeUp = useCallback(() => {
-    if (isLastQuestion) {
-      // Submit the quiz when time runs out on the last question
-      handleForceSubmit();
-    } else {
-      toast.error("Time's up! Moving to the next question.");
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }
-  }, [isLastQuestion]);
-
-  // Effect to handle time up scenarios
-  useEffect(() => {
-    if (isTimeUp && !isSubmitting && !hasAutoSubmittedRef.current) {
-      if (timerMode === "quiz") {
-        hasAutoSubmittedRef.current = true;
-        toast.error("Time's up! Submitting your quiz...");
-        handleForceSubmit();
-      } else if (timerMode === "question") {
-        handleQuestionTimeUp();
-      }
-    }
-  }, [isTimeUp, timerMode, isSubmitting, handleQuestionTimeUp]);
-
-  const handleNext = () => {
-    if (!answers[currentQuestion.id]) {
-      toast.error("Please select an answer before continuing");
-      return;
-    }
-
-    if (isLastQuestion) {
-      handleForceSubmit();
-    } else {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-
-  // Force submit (used by auto-submit when time runs out)
-  const handleForceSubmit = async () => {
+  const handleForceSubmit = useCallback(async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      // Calculate score
       let score = 0;
       quiz.questions.forEach((question) => {
         if (answers[question.id]?.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim()) {
@@ -177,16 +119,13 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
         completedAt: new Date().toISOString(),
       };
 
-      // Always save attempt to sessionStorage for reliable access on results page
       sessionStorage.setItem(`attempt-${quiz.id}`, JSON.stringify(attemptData));
 
-      // For local quizzes, just redirect
       if (quiz.id.startsWith('local-')) {
         router.push(`/quiz/${quiz.id}/results`);
         return;
       }
 
-      // Try to save attempt to database (but don't block on it)
       try {
         const response = await fetch("/api/attempts", {
           method: "POST",
@@ -209,11 +148,9 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
         console.error("Failed to save to database:", dbError);
       }
 
-      // If DB save failed, still redirect (sessionStorage has the data)
       router.push(`/quiz/${quiz.id}/results`);
     } catch (error) {
       console.error("Error submitting quiz:", error);
-      // On any error, try to save locally and continue
       const attemptData = {
         score: quiz.questions.filter(q => 
           answers[q.id]?.toLowerCase().trim() === q.correctAnswer.toLowerCase().trim()
@@ -225,71 +162,127 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
       sessionStorage.setItem(`attempt-${quiz.id}`, JSON.stringify(attemptData));
       router.push(`/quiz/${quiz.id}/results`);
     }
+  }, [isSubmitting, quiz, answers, router, userId]);
+
+  const handleQuestionTimeUp = useCallback(() => {
+    if (isLastQuestion) {
+      handleForceSubmit();
+    } else {
+      toast.error("Time's up! Moving to the next question.");
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }
+  }, [isLastQuestion, handleForceSubmit]);
+
+  useEffect(() => {
+    if (isTimeUp && !isSubmitting && !hasAutoSubmittedRef.current) {
+      if (timerMode === "quiz") {
+        hasAutoSubmittedRef.current = true;
+        toast.error("Time's up! Submitting your quiz...");
+        handleForceSubmit();
+      } else if (timerMode === "question") {
+        handleQuestionTimeUp();
+      }
+    }
+  }, [isTimeUp, timerMode, isSubmitting, handleQuestionTimeUp, handleForceSubmit]);
+
+  const handleNext = () => {
+    if (!answers[currentQuestion.id]) {
+      toast.error("Please select an answer before continuing");
+      return;
+    }
+    if (isLastQuestion) {
+      handleForceSubmit();
+    } else {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
   };
 
   return (
-    <div className="min-h-screen">
+    <PageTransition className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+      <div 
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)" }}
+      />
+
       {/* Header */}
-      <div className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-white" />
-                </div>
-              </Link>
-              <div>
-                <h1 className="text-lg font-bold text-white">{quiz.title}</h1>
-                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                  {quiz.subject}
-                </Badge>
-              </div>
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 lg:px-10 py-4 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-4"
+        >
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
+              <Brain className="w-5 h-5 text-slate-950" />
             </div>
-
-            <div className="flex items-center gap-4">
-              {/* Timer Display */}
-              {timerMode === "none" ? (
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Clock className="w-5 h-5" />
-                  <span className="font-mono text-lg">{formatTime(timeElapsed)}</span>
-                </div>
-              ) : (
-                <motion.div
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    isTimeWarning
-                      ? "bg-red-500/20 text-red-400"
-                      : "bg-slate-800/50 text-slate-300"
-                  }`}
-                  animate={isTimeWarning ? { scale: [1, 1.05, 1] } : {}}
-                  transition={{ repeat: isTimeWarning ? Infinity : 0, duration: 1 }}
-                >
-                  {isTimeWarning && <AlertTriangle className="w-5 h-5" />}
-                  <Clock className={`w-5 h-5 ${isTimeWarning ? "text-red-400" : ""}`} />
-                  <span className={`font-mono text-lg font-bold ${isTimeWarning ? "text-red-400" : ""}`}>
-                    {formatCountdown(timeRemaining)}
-                  </span>
-                  {timerMode === "question" && (
-                    <span className="text-xs text-slate-500 ml-1">/ question</span>
-                  )}
-                </motion.div>
-              )}
-            </div>
+          </Link>
+          <div>
+            <h1 className="text-lg font-bold text-white">{quiz.title}</h1>
+            <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 font-medium">
+              {quiz.subject}
+            </Badge>
           </div>
+        </motion.div>
 
-          {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-slate-400 mb-2">
-              <span>Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
-              <span>{Math.round(progress)}% Complete</span>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-4"
+        >
+          {timerMode === "none" ? (
+            <div className="flex items-center gap-2 text-slate-400 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+              <Clock className="w-5 h-5" />
+              <span className="font-mono text-lg font-medium">{formatTime(timeElapsed)}</span>
             </div>
-            <Progress value={progress} className="h-2" />
+          ) : (
+            <motion.div
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors ${
+                isTimeWarning
+                  ? "bg-red-500/15 border-red-500/30 text-red-400"
+                  : "bg-white/5 border-white/10 text-slate-300"
+              }`}
+              animate={isTimeWarning ? { scale: [1, 1.02, 1] } : {}}
+              transition={{ repeat: isTimeWarning ? Infinity : 0, duration: 1 }}
+            >
+              {isTimeWarning && <AlertTriangle className="w-5 h-5" />}
+              <Clock className={`w-5 h-5 ${isTimeWarning ? "text-red-400" : ""}`} />
+              <span className={`font-mono text-lg font-bold ${isTimeWarning ? "text-red-400" : ""}`}>
+                {formatCountdown(timeRemaining)}
+              </span>
+              {timerMode === "question" && (
+                <span className="text-xs text-slate-500 ml-1">/ question</span>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
+      </nav>
+
+      {/* Progress Bar */}
+      <div className="fixed top-[73px] inset-x-0 z-40 px-6 lg:px-10 py-3 bg-black/20 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-between text-sm text-slate-400 mb-2">
+            <span className="font-medium">Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
+            <span>{Math.round(progress)}% Complete</span>
+          </div>
+          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-6 pt-40 pb-12">
         <div className="max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
@@ -299,31 +292,29 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur">
-                {/* Question Timer Progress (for question mode) */}
+              <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden">
                 {timerMode === "question" && (
-                  <div className="mb-6">
-                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="px-8 pt-6">
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                       <motion.div
-                        className={`h-full transition-colors ${
-                          isTimeWarning ? "bg-red-500" : "bg-gradient-to-r from-purple-500 to-blue-500"
+                        className={`h-full rounded-full transition-colors ${
+                          isTimeWarning ? "bg-red-500" : "bg-gradient-to-r from-indigo-500 to-violet-500"
                         }`}
                         initial={{ width: "100%" }}
                         animate={{ width: `${(timeRemaining / timeLimit) * 100}%` }}
                         transition={{ duration: 0.5 }}
                       />
                     </div>
-                    <p className={`text-xs mt-1 text-right ${isTimeWarning ? "text-red-400" : "text-slate-500"}`}>
+                    <p className={`text-xs mt-2 text-right ${isTimeWarning ? "text-red-400" : "text-slate-500"}`}>
                       {timeRemaining} seconds remaining
                     </p>
                   </div>
                 )}
 
-                {/* Question */}
-                <div className="mb-8">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-xl font-bold text-purple-400">
+                <div className="px-8 pt-8 pb-6">
+                  <div className="flex items-start gap-5 mb-8">
+                    <div className="w-14 h-14 bg-indigo-500/15 rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                      <span className="text-2xl font-bold text-indigo-400" style={{ fontFamily: "var(--font-playfair)" }}>
                         {currentQuestionIndex + 1}
                       </span>
                     </div>
@@ -333,101 +324,102 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
                       </h2>
                     </div>
                   </div>
-                </div>
 
-                {/* Answer Options */}
-                <div className="space-y-4 mb-8">
-                  {currentQuestion.type === "mcq" && currentQuestion.options && (
-                    <RadioGroup
-                      value={answers[currentQuestion.id] || ""}
-                      onValueChange={handleAnswerChange}
-                    >
-                      {currentQuestion.options.map((option, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Label
-                            htmlFor={`option-${index}`}
-                            className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                              answers[currentQuestion.id] === option
-                                ? "border-purple-500 bg-purple-500/10"
-                                : "border-slate-700 hover:border-slate-600"
-                            }`}
-                          >
-                            <RadioGroupItem
-                              value={option}
-                              id={`option-${index}`}
-                              className="text-purple-500"
-                            />
-                            <span className="text-lg text-white flex-1">{option}</span>
-                          </Label>
-                        </motion.div>
-                      ))}
-                    </RadioGroup>
-                  )}
-
-                  {currentQuestion.type === "true_false" && (
-                    <RadioGroup
-                      value={answers[currentQuestion.id] || ""}
-                      onValueChange={handleAnswerChange}
-                    >
-                      {["True", "False"].map((option, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Label
-                            htmlFor={`option-${index}`}
-                            className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                              answers[currentQuestion.id] === option
-                                ? "border-purple-500 bg-purple-500/10"
-                                : "border-slate-700 hover:border-slate-600"
-                            }`}
-                          >
-                            <RadioGroupItem
-                              value={option}
-                              id={`option-${index}`}
-                              className="text-purple-500"
-                            />
-                            <span className="text-lg text-white flex-1">{option}</span>
-                          </Label>
-                        </motion.div>
-                      ))}
-                    </RadioGroup>
-                  )}
-
-                  {currentQuestion.type === "fill_blank" && (
-                    <div>
-                      <Input
+                  <div className="space-y-4">
+                    {currentQuestion.type === "mcq" && currentQuestion.options && (
+                      <RadioGroup
                         value={answers[currentQuestion.id] || ""}
-                        onChange={(e) => handleAnswerChange(e.target.value)}
-                        placeholder="Type your answer here..."
-                        className="text-lg p-6 bg-slate-800/50 border-slate-700 text-white"
-                      />
-                    </div>
-                  )}
+                        onValueChange={handleAnswerChange}
+                      >
+                        {currentQuestion.options.map((option, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.08 }}
+                          >
+                            <Label
+                              htmlFor={`option-${index}`}
+                              className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                                answers[currentQuestion.id] === option
+                                  ? "border-indigo-500/50 bg-indigo-500/10"
+                                  : "border-white/10 hover:border-white/20 bg-white/[0.02]"
+                              }`}
+                            >
+                              <RadioGroupItem
+                                value={option}
+                                id={`option-${index}`}
+                                className="text-indigo-500 border-white/20"
+                              />
+                              <span className="text-lg text-white flex-1">{option}</span>
+                            </Label>
+                          </motion.div>
+                        ))}
+                      </RadioGroup>
+                    )}
+
+                    {currentQuestion.type === "true_false" && (
+                      <RadioGroup
+                        value={answers[currentQuestion.id] || ""}
+                        onValueChange={handleAnswerChange}
+                      >
+                        {["True", "False"].map((option, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.08 }}
+                          >
+                            <Label
+                              htmlFor={`option-${index}`}
+                              className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                                answers[currentQuestion.id] === option
+                                  ? "border-indigo-500/50 bg-indigo-500/10"
+                                  : "border-white/10 hover:border-white/20 bg-white/[0.02]"
+                              }`}
+                            >
+                              <RadioGroupItem
+                                value={option}
+                                id={`option-${index}`}
+                                className="text-indigo-500 border-white/20"
+                              />
+                              <span className="text-lg text-white flex-1">{option}</span>
+                            </Label>
+                          </motion.div>
+                        ))}
+                      </RadioGroup>
+                    )}
+
+                    {currentQuestion.type === "fill_blank" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                      >
+                        <Input
+                          value={answers[currentQuestion.id] || ""}
+                          onChange={(e) => handleAnswerChange(e.target.value)}
+                          placeholder="Type your answer here..."
+                          className="text-lg p-6 bg-white/[0.02] border-white/10 text-white rounded-2xl placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
+                        />
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Navigation Buttons */}
-                <div className="flex gap-4">
+                <div className="px-8 py-6 border-t border-white/5 flex gap-4">
                   <Button
                     onClick={handlePrevious}
                     disabled={currentQuestionIndex === 0}
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20 text-base font-medium"
                   >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    <ChevronLeft className="w-5 h-5 mr-2" />
                     Previous
                   </Button>
                   <Button
                     onClick={handleNext}
                     disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="flex-1 h-14 rounded-xl bg-white text-slate-950 hover:bg-slate-100 text-base font-semibold"
                   >
                     {isSubmitting ? (
                       "Submitting..."
@@ -436,25 +428,24 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
                     ) : (
                       <>
                         Next
-                        <ChevronRight className="w-4 h-4 ml-2" />
+                        <ChevronRight className="w-5 h-5 ml-2" />
                       </>
                     )}
                   </Button>
                 </div>
-              </Card>
+              </div>
 
-              {/* Question Indicators */}
-              <div className="flex flex-wrap gap-2 mt-6 justify-center">
+              <div className="flex flex-wrap gap-2 mt-8 justify-center">
                 {quiz.questions.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentQuestionIndex(index)}
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all ${
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
                       index === currentQuestionIndex
-                        ? "bg-purple-600 text-white"
+                        ? "bg-white text-slate-950"
                         : answers[quiz.questions[index].id]
-                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                        ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
+                        : "bg-white/5 text-slate-500 hover:bg-white/10 border border-white/10"
                     }`}
                   >
                     {index + 1}
@@ -465,6 +456,6 @@ export default function QuizTakingClient({ quiz, userId }: QuizTakingClientProps
           </AnimatePresence>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

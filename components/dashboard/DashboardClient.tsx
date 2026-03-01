@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Plus,
   Brain,
@@ -13,25 +11,15 @@ import {
   Calendar,
   Trash2,
   Play,
-  LogOut,
   Share2,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import ShareModal from "@/components/quiz/ShareModal";
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
+import { Navbar } from "@/components/ui/Navbar";
+import { PageTransition, FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/PageTransition";
 
 interface Quiz {
   id: string;
@@ -62,8 +50,6 @@ export default function DashboardClient({
   quizzes: serverQuizzes,
   stats: serverStats,
 }: DashboardClientProps) {
-  const { signOut } = useClerk();
-  const router = useRouter();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [allQuizzes, setAllQuizzes] = useState<Quiz[]>(serverQuizzes);
   const [stats, setStats] = useState(serverStats);
@@ -108,216 +94,174 @@ export default function DashboardClient({
   };
 
   return (
-    <div className="min-h-screen">
+    <PageTransition className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
       {/* Navigation */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                Re-vision
-              </span>
-            </Link>
+      <Navbar user={user} />
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar>
-                    <AvatarImage src={user.imageUrl} alt={user.name} />
-                    <AvatarFallback className="bg-purple-600">
-                      {user.name[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()} className="text-red-500">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </nav>
+      {/* Background gradient */}
+      <div 
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(16,185,129,0.04) 100%)" }}
+      />
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-6 lg:px-10 pt-28 pb-12">
         {/* Header */}
-        <div className="mb-12">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-slate-400 mb-2 drop-shadow-sm"
+        <FadeIn className="mb-12">
+          <p className="text-base text-indigo-400 font-semibold tracking-widest uppercase mb-4">Dashboard</p>
+          <h1
+            className="text-4xl md:text-5xl font-bold text-white mb-3"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            Welcome back, {user.name}! 👋
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-slate-400 text-lg"
-          >
+            Welcome back, {user.name.split(' ')[0]}
+          </h1>
+          <p className="text-lg text-slate-400">
             Ready to master your subjects?
-          </motion.p>
-        </div>
+          </p>
+        </FadeIn>
 
         {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
-        >
-          <SpotlightCard className="p-6 bg-slate-900/40 border-purple-500/20 backdrop-blur-md">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center shadow-lg shadow-purple-900/20">
-                <Brain className="w-6 h-6 text-purple-400" />
+        <FadeIn delay={0.1} className="mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <SpotlightCard className="p-6 bg-white/[0.02] border-indigo-500/20 backdrop-blur-md rounded-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-indigo-500/15 rounded-2xl flex items-center justify-center border border-indigo-500/20">
+                  <Brain className="w-7 h-7 text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">Total Quizzes</p>
+                  <p className="text-4xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-playfair)" }}>{stats.totalQuizzes}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-slate-400">Total Quizzes</p>
-                <p className="text-3xl font-bold text-white tracking-tight">{stats.totalQuizzes}</p>
-              </div>
-            </div>
-          </SpotlightCard>
+            </SpotlightCard>
 
-          <SpotlightCard className="p-6 bg-slate-900/40 border-blue-500/20 backdrop-blur-md" spotlightColor="rgba(59, 130, 246, 0.15)">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20">
-                <Target className="w-6 h-6 text-blue-400" />
+            <SpotlightCard className="p-6 bg-white/[0.02] border-emerald-500/20 backdrop-blur-md rounded-2xl" spotlightColor="rgba(16, 185, 129, 0.12)">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-emerald-500/15 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+                  <Target className="w-7 h-7 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">Total Attempts</p>
+                  <p className="text-4xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-playfair)" }}>{stats.totalAttempts}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-slate-400">Total Attempts</p>
-                <p className="text-3xl font-bold text-white tracking-tight">{stats.totalAttempts}</p>
-              </div>
-            </div>
-          </SpotlightCard>
+            </SpotlightCard>
 
-          <SpotlightCard className="p-6 bg-slate-900/40 border-green-500/20 backdrop-blur-md" spotlightColor="rgba(34, 197, 94, 0.15)">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center shadow-lg shadow-green-900/20">
-                <TrendingUp className="w-6 h-6 text-green-400" />
+            <SpotlightCard className="p-6 bg-white/[0.02] border-amber-500/20 backdrop-blur-md rounded-2xl" spotlightColor="rgba(245, 158, 11, 0.12)">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-amber-500/15 rounded-2xl flex items-center justify-center border border-amber-500/20">
+                  <TrendingUp className="w-7 h-7 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">Best Score</p>
+                  <p className="text-4xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-playfair)" }}>{stats.bestScore}%</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-slate-400">Best Score</p>
-                <p className="text-3xl font-bold text-white tracking-tight">{stats.bestScore}%</p>
-              </div>
-            </div>
-          </SpotlightCard>
-        </motion.div>
+            </SpotlightCard>
+          </div>
+        </FadeIn>
 
         {/* Quizzes Section */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Your Quizzes</h2>
-          <Link href="/dashboard/create">
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Quiz
-            </Button>
-          </Link>
-        </div>
-
-        {/* Empty State */}
-        {allQuizzes.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <SpotlightCard className="p-12 text-center bg-slate-900/50 border-slate-800/50 backdrop-blur-md">
-              <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-purple-900/20">
-                <Brain className="w-10 h-10 text-purple-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">
-                No quizzes yet!
-              </h3>
-              <p className="text-slate-400 mb-6 max-w-md mx-auto">
-                Upload your first notes to generate an AI-powered quiz and start mastering your subject.
-              </p>
-              <Link href="/dashboard/create">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg shadow-purple-900/30">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Quiz
-                </Button>
-              </Link>
-            </SpotlightCard>
-          </motion.div>
-        ) : (
-          /* Quiz Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allQuizzes.map((quiz, index) => (
-              <motion.div
-                key={quiz.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className="h-full"
-              >
-                <SpotlightCard className="p-6 h-full backdrop-blur-md bg-slate-900/40 border-slate-800/50">
-                  <div className="flex flex-col h-full">
-                    <div className="flex justify-between items-start mb-4">
-                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 hover:bg-purple-500/30">
-                        {quiz.subject}
-                      </Badge>
-                      <div className="flex gap-1">
-                        {/* Share button */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                          onClick={() => handleShareQuiz(quiz)}
-                          title="Share quiz"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                          onClick={() => handleDeleteQuiz(quiz.id)}
-                          disabled={isDeleting === quiz.id}
-                          title="Delete quiz"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 flex-grow">
-                      {quiz.title}
-                    </h3>
-
-                    <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(quiz.created_at || quiz.createdAt || Date.now()).toLocaleDateString()}
-                    </div>
-
-                    <div className="text-sm text-slate-400 mb-6">
-                      {Array.isArray(quiz.questions) ? quiz.questions.length : 0} questions
-                    </div>
-
-                    <Link href={`/quiz/${quiz.id}/take`} className="mt-auto">
-                      <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg shadow-purple-900/20">
-                        <Play className="w-4 h-4 mr-2" />
-                        Start Quiz
-                      </Button>
-                    </Link>
-                  </div>
-                </SpotlightCard>
-              </motion.div>
-            ))}
+        <FadeIn delay={0.2}>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>Your Quizzes</h2>
+            <Link href="/dashboard/create">
+              <Button className="bg-white text-slate-950 hover:bg-slate-100 font-semibold h-12 px-6 rounded-xl">
+                <Plus className="w-5 h-5 mr-2" />
+                Create Quiz
+              </Button>
+            </Link>
           </div>
-        )}
+
+          {/* Empty State */}
+          {allQuizzes.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <SpotlightCard className="p-12 text-center bg-white/[0.02] border-white/10 backdrop-blur-md rounded-3xl">
+                <div className="w-20 h-20 bg-indigo-500/15 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/20">
+                  <Brain className="w-10 h-10 text-indigo-400" />
+                </div>
+                <h3 
+                  className="text-3xl font-bold text-white mb-3"
+                  style={{ fontFamily: "var(--font-playfair)" }}
+                >
+                  No quizzes yet
+                </h3>
+                <p className="text-slate-400 mb-8 max-w-md mx-auto text-lg">
+                  Upload your first notes to generate an AI-powered quiz and start mastering your subject.
+                </p>
+                <Link href="/dashboard/create">
+                  <Button size="lg" className="bg-white text-slate-950 hover:bg-slate-100 font-bold text-base px-8 h-14 rounded-xl">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create Your First Quiz
+                  </Button>
+                </Link>
+              </SpotlightCard>
+            </motion.div>
+          ) : (
+            /* Quiz Grid */
+            <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allQuizzes.map((quiz) => (
+                <StaggerItem key={quiz.id} className="h-full">
+                  <SpotlightCard className="p-6 h-full backdrop-blur-md bg-white/[0.02] border-white/10 rounded-2xl hover:border-white/20 transition-colors duration-300">
+                    <div className="flex flex-col h-full">
+                      <div className="flex justify-between items-start mb-4">
+                        <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 hover:bg-indigo-500/20 font-medium">
+                          {quiz.subject}
+                        </Badge>
+                        <div className="flex gap-1">
+                          {/* Share button */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl h-9 w-9"
+                            onClick={() => handleShareQuiz(quiz)}
+                            title="Share quiz"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl h-9 w-9"
+                            onClick={() => handleDeleteQuiz(quiz.id)}
+                            disabled={isDeleting === quiz.id}
+                            title="Delete quiz"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 flex-grow">
+                        {quiz.title}
+                      </h3>
+
+                      <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(quiz.created_at || quiz.createdAt || Date.now()).toLocaleDateString()}
+                      </div>
+
+                      <div className="text-sm text-slate-500 mb-6">
+                        {Array.isArray(quiz.questions) ? quiz.questions.length : 0} questions
+                      </div>
+
+                      <Link href={`/quiz/${quiz.id}/take`} className="mt-auto">
+                        <Button className="w-full bg-white text-slate-950 hover:bg-slate-100 font-semibold h-12 rounded-xl">
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Quiz
+                        </Button>
+                      </Link>
+                    </div>
+                  </SpotlightCard>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          )}
+        </FadeIn>
       </div>
 
       {/* Share Modal */}
@@ -332,6 +276,6 @@ export default function DashboardClient({
           quizTitle={selectedQuizForShare.title}
         />
       )}
-    </div>
+    </PageTransition>
   );
 }

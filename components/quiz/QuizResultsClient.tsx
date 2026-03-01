@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Trophy, Target, ArrowRight, RotateCcw, Home, TrendingUp, TrendingDown, Minus, History } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Question } from "@/types";
+import { PageTransition, FadeIn, ScaleIn } from "@/components/ui/PageTransition";
 
 interface AttemptHistory {
   score: number;
@@ -41,25 +41,21 @@ export default function QuizResultsClient({
   const [previousBest, setPreviousBest] = useState<number | null>(null);
   const percentage = Math.round((attempt.score / attempt.totalQuestions) * 100);
 
-  // Load attempt history from localStorage
   useEffect(() => {
     try {
       const historyKey = `quiz-history-${quiz.id}`;
       const existingHistory: AttemptHistory[] = JSON.parse(localStorage.getItem(historyKey) || '[]');
       
-      // Check if this attempt is already saved (to avoid duplicates on refresh)
       const currentAttemptExists = existingHistory.some(
         h => h.completedAt === attempt.completedAt && h.score === attempt.score
       );
       
       if (!currentAttemptExists) {
-        // Calculate previous best before adding current attempt
         if (existingHistory.length > 0) {
           const best = Math.max(...existingHistory.map(h => h.percentage));
           setPreviousBest(best);
         }
         
-        // Add current attempt to history
         const newAttempt: AttemptHistory = {
           score: attempt.score,
           totalQuestions: attempt.totalQuestions,
@@ -67,11 +63,10 @@ export default function QuizResultsClient({
           percentage,
         };
         
-        const updatedHistory = [newAttempt, ...existingHistory].slice(0, 10); // Keep last 10 attempts
+        const updatedHistory = [newAttempt, ...existingHistory].slice(0, 10);
         localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
         setAttemptHistory(updatedHistory);
       } else {
-        // Already exists, just set history and previous best
         setAttemptHistory(existingHistory);
         const otherAttempts = existingHistory.filter(h => h.completedAt !== attempt.completedAt);
         if (otherAttempts.length > 0) {
@@ -83,7 +78,6 @@ export default function QuizResultsClient({
     }
   }, [quiz.id, attempt, percentage]);
 
-  // Animate score count-up
   useEffect(() => {
     const duration = 2000;
     const steps = 50;
@@ -96,7 +90,6 @@ export default function QuizResultsClient({
         setDisplayScore(attempt.score);
         clearInterval(timer);
         
-        // Trigger confetti for good scores
         if (percentage >= 70) {
           confetti({
             particleCount: 100,
@@ -113,10 +106,10 @@ export default function QuizResultsClient({
   }, [attempt.score, percentage]);
 
   const getPerformanceMessage = () => {
-    if (percentage >= 90) return { text: "Outstanding!", color: "text-yellow-400" };
-    if (percentage >= 70) return { text: "Great Job!", color: "text-green-400" };
-    if (percentage >= 50) return { text: "Good Effort!", color: "text-blue-400" };
-    return { text: "Keep Practicing!", color: "text-purple-400" };
+    if (percentage >= 90) return { text: "Outstanding!", color: "text-amber-400" };
+    if (percentage >= 70) return { text: "Great Job!", color: "text-emerald-400" };
+    if (percentage >= 50) return { text: "Good Effort!", color: "text-indigo-400" };
+    return { text: "Keep Practicing!", color: "text-violet-400" };
   };
 
   const getComparisonInfo = () => {
@@ -126,22 +119,22 @@ export default function QuizResultsClient({
       return { 
         text: `+${diff}% from previous best!`, 
         icon: TrendingUp, 
-        color: "text-green-400",
-        bgColor: "bg-green-500/20"
+        color: "text-emerald-400",
+        bgColor: "bg-emerald-500/15 border-emerald-500/25"
       };
     } else if (diff < 0) {
       return { 
         text: `${diff}% from previous best`, 
         icon: TrendingDown, 
         color: "text-red-400",
-        bgColor: "bg-red-500/20"
+        bgColor: "bg-red-500/15 border-red-500/25"
       };
     }
     return { 
       text: "Matched your best!", 
       icon: Minus, 
-      color: "text-yellow-400",
-      bgColor: "bg-yellow-500/20"
+      color: "text-amber-400",
+      bgColor: "bg-amber-500/15 border-amber-500/25"
     };
   };
 
@@ -150,43 +143,47 @@ export default function QuizResultsClient({
   const attemptNumber = attemptHistory.length;
 
   const handleRetake = () => {
-    // Clear current attempt from sessionStorage before retaking
     sessionStorage.removeItem(`attempt-${quiz.id}`);
   };
 
   return (
-    <div className="min-h-screen">
+    <PageTransition className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+      <div 
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 50%, rgba(99,102,241,0.06) 100%)" }}
+      />
+
       {/* Navigation */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20">
-        <div className="container mx-auto px-6 py-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6 text-white" />
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 lg:px-10 py-4 border-b border-white/5 bg-black/40 backdrop-blur-2xl">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center group-hover:bg-slate-100 transition-colors">
+              <Brain className="w-5 h-5 text-slate-950" />
             </div>
-            <span className="text-xl font-bold text-white">Re-vision</span>
+            <span className="text-white font-bold tracking-tight text-xl">Re-vision</span>
           </Link>
-        </div>
+        </motion.div>
       </nav>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-6 pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
           {/* Score Card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="p-12 text-center bg-gradient-to-br from-slate-900/80 to-purple-900/30 border-purple-500/30 backdrop-blur mb-8">
-              {/* Attempt Badge */}
+          <ScaleIn>
+            <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden mb-8 p-12 text-center relative">
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/10 via-transparent to-emerald-500/10" />
+              
               {attemptNumber > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-4"
+                  className="mb-6"
                 >
-                  <Badge className="bg-slate-800/50 text-slate-300 border-slate-700">
+                  <Badge className="bg-white/5 text-slate-400 border-white/10">
                     <History className="w-3 h-3 mr-1" />
                     Attempt #{attemptNumber}
                   </Badge>
@@ -197,16 +194,17 @@ export default function QuizResultsClient({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="w-32 h-32 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6"
+                className="w-28 h-28 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-indigo-500/20"
               >
-                <Trophy className="w-16 h-16 text-white" />
+                <Trophy className="w-14 h-14 text-white" />
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className={`text-4xl font-bold mb-2 ${performance.color}`}
+                className={`text-4xl font-bold mb-4 ${performance.color}`}
+                style={{ fontFamily: "var(--font-playfair)" }}
               >
                 {performance.text}
               </motion.h1>
@@ -215,9 +213,9 @@ export default function QuizResultsClient({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="mb-4"
+                className="mb-6"
               >
-                <div className="text-7xl font-bold text-white mb-2">
+                <div className="text-8xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
                   {displayScore}/{attempt.totalQuestions}
                 </div>
                 <div className="text-3xl text-slate-400">
@@ -225,13 +223,12 @@ export default function QuizResultsClient({
                 </div>
               </motion.div>
 
-              {/* Comparison with previous best */}
               {comparison && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.9 }}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${comparison.bgColor} mb-4`}
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border ${comparison.bgColor} mb-6`}
                 >
                   <comparison.icon className={`w-5 h-5 ${comparison.color}`} />
                   <span className={`font-medium ${comparison.color}`}>{comparison.text}</span>
@@ -243,60 +240,55 @@ export default function QuizResultsClient({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.0 }}
               >
-                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-lg px-4 py-2">
+                <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-lg px-5 py-2 font-medium">
                   {quiz.subject}
                 </Badge>
               </motion.div>
-            </Card>
-          </motion.div>
+            </div>
+          </ScaleIn>
 
           {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-          >
-            <Card className="p-6 bg-slate-900/50 border-slate-800/50 backdrop-blur">
+          <FadeIn delay={0.3} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <Target className="w-6 h-6 text-green-400" />
+                <div className="w-14 h-14 bg-emerald-500/15 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+                  <Target className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">Correct Answers</p>
-                  <p className="text-2xl font-bold text-white">{attempt.score}</p>
+                  <p className="text-sm text-slate-500 font-medium">Correct Answers</p>
+                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>{attempt.score}</p>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-6 bg-slate-900/50 border-slate-800/50 backdrop-blur">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center">
-                  <Target className="w-6 h-6 text-red-400" />
+                <div className="w-14 h-14 bg-red-500/15 rounded-2xl flex items-center justify-center border border-red-500/20">
+                  <Target className="w-7 h-7 text-red-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">Incorrect Answers</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-sm text-slate-500 font-medium">Incorrect Answers</p>
+                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
                     {attempt.totalQuestions - attempt.score}
                   </p>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-6 bg-slate-900/50 border-slate-800/50 backdrop-blur">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <div className="w-14 h-14 bg-indigo-500/15 rounded-2xl flex items-center justify-center border border-indigo-500/20">
                   {previousBest !== null ? (
-                    <TrendingUp className="w-6 h-6 text-purple-400" />
+                    <TrendingUp className="w-7 h-7 text-indigo-400" />
                   ) : (
-                    <Brain className="w-6 h-6 text-purple-400" />
+                    <Brain className="w-7 h-7 text-indigo-400" />
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-slate-500 font-medium">
                     {previousBest !== null ? "Best Score" : "Accuracy"}
                   </p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
                     {previousBest !== null 
                       ? `${Math.max(percentage, previousBest)}%`
                       : `${percentage}%`
@@ -304,83 +296,73 @@ export default function QuizResultsClient({
                   </p>
                 </div>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </FadeIn>
 
           {/* Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
+          <FadeIn delay={0.4} className="flex flex-col sm:flex-row gap-4">
             <Link href={`/quiz/${quiz.id}/review`} className="flex-1">
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg py-6">
+              <Button className="w-full bg-white text-slate-950 hover:bg-slate-100 text-lg h-14 rounded-xl font-semibold">
                 Review Answers
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
 
             <Link href={`/quiz/${quiz.id}/take`} className="flex-1" onClick={handleRetake}>
-              <Button variant="outline" className="w-full text-lg py-6 border-slate-700 hover:bg-purple-500/10 hover:border-purple-500/50">
+              <Button variant="outline" className="w-full text-lg h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20">
                 <RotateCcw className="w-5 h-5 mr-2" />
                 Retake Quiz
               </Button>
             </Link>
 
             <Link href="/dashboard">
-              <Button variant="outline" className="w-full sm:w-auto text-lg py-6 border-slate-700">
+              <Button variant="outline" className="w-full sm:w-auto text-lg h-14 rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20">
                 <Home className="w-5 h-5 mr-2" />
                 Dashboard
               </Button>
             </Link>
-          </motion.div>
+          </FadeIn>
 
           {/* Previous Attempts History */}
           {attemptHistory.length > 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5 }}
-              className="mt-8"
-            >
-              <Card className="p-6 bg-slate-900/50 border-slate-800/50 backdrop-blur">
+            <FadeIn delay={0.5} className="mt-8">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <History className="w-5 h-5 text-purple-400" />
+                  <History className="w-5 h-5 text-indigo-400" />
                   Attempt History
                 </h3>
                 <div className="space-y-3">
                   {attemptHistory.slice(0, 5).map((hist, index) => (
                     <div
                       key={hist.completedAt}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
+                      className={`flex items-center justify-between p-4 rounded-xl ${
                         index === 0 
-                          ? 'bg-purple-500/10 border border-purple-500/30' 
-                          : 'bg-slate-800/30'
+                          ? 'bg-indigo-500/10 border border-indigo-500/20' 
+                          : 'bg-white/[0.02] border border-white/5'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-400 text-sm">
+                        <span className="text-slate-500 text-sm font-medium">
                           #{attemptHistory.length - index}
                         </span>
-                        <span className="text-white font-medium">
+                        <span className="text-white font-bold">
                           {hist.score}/{hist.totalQuestions}
                         </span>
                         {index === 0 && (
-                          <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
+                          <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-xs">
                             Latest
                           </Badge>
                         )}
                         {hist.percentage === Math.max(...attemptHistory.map(h => h.percentage)) && (
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                          <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/25 text-xs">
                             Best
                           </Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-4">
                         <span className={`font-bold ${
-                          hist.percentage >= 70 ? 'text-green-400' : 
-                          hist.percentage >= 50 ? 'text-yellow-400' : 'text-red-400'
+                          hist.percentage >= 70 ? 'text-emerald-400' : 
+                          hist.percentage >= 50 ? 'text-amber-400' : 'text-red-400'
                         }`}>
                           {hist.percentage}%
                         </span>
@@ -391,18 +373,13 @@ export default function QuizResultsClient({
                     </div>
                   ))}
                 </div>
-              </Card>
-            </motion.div>
+              </div>
+            </FadeIn>
           )}
 
           {/* Motivational Message */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.6 }}
-            className="mt-8 text-center"
-          >
-            <Card className="p-6 bg-gradient-to-br from-purple-900/20 to-slate-900/20 border-purple-500/20 backdrop-blur">
+          <FadeIn delay={0.6} className="mt-8">
+            <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 backdrop-blur-xl p-8 text-center">
               <p className="text-slate-300 text-lg">
                 {percentage >= 90
                   ? "You've mastered this material! Keep up the excellent work!"
@@ -412,10 +389,10 @@ export default function QuizResultsClient({
                   ? "You're getting there! Try reviewing your notes and retaking the quiz."
                   : "Don't give up! Learning takes time. Review the material and try again."}
               </p>
-            </Card>
-          </motion.div>
+            </div>
+          </FadeIn>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

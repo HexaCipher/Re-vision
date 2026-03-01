@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,11 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Brain, FileText, Upload, Sparkles, ArrowLeft, Loader2, Zap, Flame, Trophy, Clock, Timer, TimerOff, X, CheckCircle, FileUp } from "lucide-react";
+import { Brain, FileText, Upload, Sparkles, Loader2, Zap, Flame, Trophy, Clock, Timer, TimerOff, X, CheckCircle, FileUp } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
+import { PageTransition, FadeIn } from "@/components/ui/PageTransition";
+import { Navbar } from "@/components/ui/Navbar";
 
 export default function CreateQuizPage() {
   const router = useRouter();
@@ -36,7 +37,6 @@ export default function CreateQuizPage() {
 
   // Supported file types
   const SUPPORTED_EXTENSIONS = ".pdf,.docx,.txt";
-  const SUPPORTED_MIMES = "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain";
 
   // Form data
   const [formData, setFormData] = useState({
@@ -72,12 +72,12 @@ export default function CreateQuizPage() {
     setPdfMetadata(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
 
       const response = await fetch("/api/upload/document", {
         method: "POST",
-        body: formData,
+        body: formDataUpload,
       });
 
       const data = await response.json();
@@ -92,9 +92,9 @@ export default function CreateQuizPage() {
       
       const pageInfo = data.metadata.pages ? ` from ${data.metadata.pages} page(s)` : "";
       toast.success(`Extracted ${data.metadata.characters.toLocaleString()} characters${pageInfo}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Document upload error:", error);
-      toast.error(error.message || "Failed to process document");
+      toast.error(error instanceof Error ? error.message : "Failed to process document");
       setPdfFile(null);
     } finally {
       setIsUploadingPdf(false);
@@ -188,72 +188,69 @@ export default function CreateQuizPage() {
       sessionStorage.setItem(`quiz-${data.quizId}`, JSON.stringify(quizData));
       
       router.push(`/quiz/${data.quizId}/take`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Quiz generation error:", error);
-      toast.error(error.message || "Failed to generate quiz");
+      toast.error(error instanceof Error ? error.message : "Failed to generate quiz");
       setIsGenerating(false);
     }
   };
 
+  const userData = user ? {
+    name: user.fullName || user.firstName || "User",
+    email: user.primaryEmailAddress?.emailAddress || "",
+    imageUrl: user.imageUrl,
+  } : undefined;
+
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/20 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <ArrowLeft className="w-5 h-5 text-slate-400" />
-            <span className="text-slate-400 hover:text-white transition-colors">
-              Back to Dashboard
-            </span>
-          </Link>
-        </div>
-      </nav>
+    <PageTransition className="min-h-screen bg-[#0a0a0a]">
+      {/* Background gradient */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(16,185,129,0.04) 100%)"
+        }}
+      />
+
+      {/* Navbar */}
+      <Navbar user={userData} showBackButton backHref="/dashboard" backLabel="Back to Dashboard" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="relative z-10 container mx-auto px-6 pt-28 pb-12">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            >
-              <Brain className="w-8 h-8 text-white" />
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl font-bold text-white mb-2"
-            >
-              Create New Quiz
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-slate-400"
-            >
-              Step {step} of 3
-            </motion.p>
+            <FadeIn>
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Brain className="w-8 h-8 text-slate-950" />
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.1}>
+              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-3">
+                Create New Quiz
+              </h1>
+            </FadeIn>
+            <FadeIn delay={0.2}>
+              <p className="text-slate-400 text-lg">
+                Step {step} of 3
+              </p>
+            </FadeIn>
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex gap-2">
+          <FadeIn delay={0.3} className="mb-10">
+            <div className="flex gap-3">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className={`h-2 flex-1 rounded-full transition-all ${
+                  className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
                     i <= step
-                      ? "bg-gradient-to-r from-purple-600 to-blue-600"
-                      : "bg-slate-800"
+                      ? "bg-white"
+                      : "bg-white/10"
                   }`}
                 />
               ))}
             </div>
-          </div>
+          </FadeIn>
 
           {/* Step Content */}
           <AnimatePresence mode="wait">
@@ -263,27 +260,28 @@ export default function CreateQuizPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur">
-                  <h2 className="text-2xl font-bold text-white mb-6">
+                <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8">
+                  <h2 className="font-playfair text-2xl font-bold text-white mb-6">
                     Choose Input Method
                   </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
                       onClick={() => setInputType("text")}
-                      className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      className={`p-6 rounded-2xl border-2 transition-all text-left ${
                         inputType === "text"
-                          ? "border-purple-500 bg-purple-500/10"
-                          : "border-slate-700 hover:border-slate-600"
+                          ? "border-white bg-white/5"
+                          : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                       }`}
                     >
                       <FileText
                         className={`w-8 h-8 mb-3 ${
-                          inputType === "text" ? "text-purple-400" : "text-slate-400"
+                          inputType === "text" ? "text-white" : "text-slate-400"
                         }`}
                       />
-                      <h3 className="text-lg font-bold text-white mb-2">
+                      <h3 className="text-lg font-semibold text-white mb-2">
                         Paste Text
                       </h3>
                       <p className="text-sm text-slate-400">
@@ -293,18 +291,18 @@ export default function CreateQuizPage() {
 
                     <button
                       onClick={() => setInputType("pdf")}
-                      className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      className={`p-6 rounded-2xl border-2 transition-all text-left ${
                         inputType === "pdf"
-                          ? "border-purple-500 bg-purple-500/10"
-                          : "border-slate-700 hover:border-slate-600"
+                          ? "border-white bg-white/5"
+                          : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                       }`}
                     >
                       <Upload
                         className={`w-8 h-8 mb-3 ${
-                          inputType === "pdf" ? "text-purple-400" : "text-slate-400"
+                          inputType === "pdf" ? "text-white" : "text-slate-400"
                         }`}
                       />
-                      <h3 className="text-lg font-bold text-white mb-2">
+                      <h3 className="text-lg font-semibold text-white mb-2">
                         Upload Document
                       </h3>
                       <p className="text-sm text-slate-400">
@@ -315,11 +313,11 @@ export default function CreateQuizPage() {
 
                   <Button
                     onClick={handleNext}
-                    className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="w-full mt-8 bg-white text-slate-950 hover:bg-slate-100 h-14 rounded-xl font-semibold text-base"
                   >
                     Continue
                   </Button>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -329,9 +327,10 @@ export default function CreateQuizPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur">
-                  <h2 className="text-2xl font-bold text-white mb-6">
+                <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8">
+                  <h2 className="font-playfair text-2xl font-bold text-white mb-6">
                     {inputType === "pdf" ? "Upload Your Document" : "Enter Your Notes"}
                   </h2>
 
@@ -339,7 +338,7 @@ export default function CreateQuizPage() {
                     // Text Input Mode
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="content" className="text-slate-300">
+                        <Label htmlFor="content" className="text-slate-300 font-medium">
                           Paste your study notes here
                         </Label>
                         <Textarea
@@ -349,10 +348,10 @@ export default function CreateQuizPage() {
                             setFormData({ ...formData, content: e.target.value })
                           }
                           placeholder="Paste your notes, lecture content, or any text you want to learn from..."
-                          className="mt-2 min-h-[300px] bg-slate-800/50 border-slate-700 text-white"
+                          className="mt-3 min-h-[300px] bg-white/[0.02] border-white/10 text-white placeholder:text-slate-500 focus:border-white/30 rounded-xl resize-none"
                         />
-                        <p className="text-sm text-slate-400 mt-2">
-                          {formData.content.length} characters
+                        <p className="text-sm text-slate-500 mt-3">
+                          {formData.content.length.toLocaleString()} characters
                         </p>
                       </div>
                     </div>
@@ -371,7 +370,7 @@ export default function CreateQuizPage() {
                         // Upload dropzone
                         <div
                           onClick={() => fileInputRef.current?.click()}
-                          className="border-2 border-dashed border-slate-700 rounded-xl p-12 text-center cursor-pointer hover:border-purple-500/50 hover:bg-purple-500/5 transition-all"
+                          className="border-2 border-dashed border-white/10 rounded-2xl p-12 text-center cursor-pointer hover:border-white/20 hover:bg-white/[0.02] transition-all"
                         >
                           <FileUp className="w-16 h-16 mx-auto mb-4 text-slate-500" />
                           <p className="text-lg font-medium text-white mb-2">
@@ -386,8 +385,8 @@ export default function CreateQuizPage() {
                         </div>
                       ) : isUploadingPdf ? (
                         // Uploading state
-                        <div className="border-2 border-purple-500/30 rounded-xl p-12 text-center bg-purple-500/5">
-                          <Loader2 className="w-16 h-16 mx-auto mb-4 text-purple-400 animate-spin" />
+                        <div className="border-2 border-indigo-500/30 rounded-2xl p-12 text-center bg-indigo-500/5">
+                          <Loader2 className="w-16 h-16 mx-auto mb-4 text-indigo-400 animate-spin" />
                           <p className="text-lg font-medium text-white mb-2">
                             Processing your document...
                           </p>
@@ -397,23 +396,27 @@ export default function CreateQuizPage() {
                         </div>
                       ) : pdfMetadata ? (
                         // Success state
-                        <div className="border-2 border-green-500/30 rounded-xl p-6 bg-green-500/5">
+                        <div className="border-2 border-emerald-500/30 rounded-2xl p-6 bg-emerald-500/5">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                                <CheckCircle className="w-6 h-6 text-green-400" />
+                              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                                <CheckCircle className="w-6 h-6 text-emerald-400" />
                               </div>
                               <div>
                                 <p className="font-medium text-white">{pdfMetadata.fileName}</p>
-                                <p className="text-sm text-slate-400">
-                                  {pdfMetadata.fileType && <Badge className="mr-2 bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">{pdfMetadata.fileType}</Badge>}
-                                  {pdfMetadata.pages && `${pdfMetadata.pages} page(s) • `}{pdfMetadata.characters.toLocaleString()} characters extracted
+                                <p className="text-sm text-slate-400 flex items-center gap-2 mt-1">
+                                  {pdfMetadata.fileType && (
+                                    <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/25 text-xs">
+                                      {pdfMetadata.fileType}
+                                    </Badge>
+                                  )}
+                                  {pdfMetadata.pages && `${pdfMetadata.pages} page(s) · `}{pdfMetadata.characters.toLocaleString()} characters extracted
                                 </p>
                               </div>
                             </div>
                             <button
                               onClick={handleRemoveFile}
-                              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
                             >
                               <X className="w-5 h-5 text-slate-400" />
                             </button>
@@ -422,7 +425,7 @@ export default function CreateQuizPage() {
                           {/* Preview of extracted text */}
                           <div className="mt-4">
                             <Label className="text-slate-400 text-sm">Extracted Text Preview</Label>
-                            <div className="mt-2 p-4 bg-slate-800/50 rounded-lg max-h-[200px] overflow-y-auto">
+                            <div className="mt-2 p-4 bg-white/[0.02] rounded-xl max-h-[200px] overflow-y-auto border border-white/5">
                               <p className="text-sm text-slate-300 whitespace-pre-wrap">
                                 {formData.content.slice(0, 1000)}
                                 {formData.content.length > 1000 && "..."}
@@ -432,10 +435,10 @@ export default function CreateQuizPage() {
                         </div>
                       ) : (
                         // Error state - file selected but no metadata
-                        <div className="border-2 border-red-500/30 rounded-xl p-6 bg-red-500/5">
+                        <div className="border-2 border-red-500/30 rounded-2xl p-6 bg-red-500/5">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center">
+                              <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
                                 <X className="w-6 h-6 text-red-400" />
                               </div>
                               <div>
@@ -447,7 +450,7 @@ export default function CreateQuizPage() {
                             </div>
                             <button
                               onClick={handleRemoveFile}
-                              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
                             >
                               <X className="w-5 h-5 text-slate-400" />
                             </button>
@@ -457,11 +460,11 @@ export default function CreateQuizPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex gap-4 mt-8">
                     <Button
                       onClick={() => setStep(1)}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 h-14 rounded-xl font-semibold border-white/10 bg-transparent text-white hover:bg-white/5"
                       disabled={isUploadingPdf}
                     >
                       Back
@@ -469,12 +472,12 @@ export default function CreateQuizPage() {
                     <Button
                       onClick={handleNext}
                       disabled={isUploadingPdf || !formData.content.trim()}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      className="flex-1 bg-white text-slate-950 hover:bg-slate-100 h-14 rounded-xl font-semibold text-base disabled:opacity-50"
                     >
                       Continue
                     </Button>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -484,15 +487,16 @@ export default function CreateQuizPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <Card className="p-8 bg-slate-900/50 border-slate-800/50 backdrop-blur">
-                  <h2 className="text-2xl font-bold text-white mb-6">
+                <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8">
+                  <h2 className="font-playfair text-2xl font-bold text-white mb-6">
                     Configure Your Quiz
                   </h2>
 
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="title" className="text-slate-300">
+                      <Label htmlFor="title" className="text-slate-300 font-medium">
                         Quiz Title
                       </Label>
                       <Input
@@ -502,12 +506,12 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, title: e.target.value })
                         }
                         placeholder="e.g., Chapter 5: Data Structures"
-                        className="mt-2 bg-slate-800/50 border-slate-700 text-white"
+                        className="mt-3 bg-white/[0.02] border-white/10 text-white placeholder:text-slate-500 focus:border-white/30 h-12 rounded-xl"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="subject" className="text-slate-300">
+                      <Label htmlFor="subject" className="text-slate-300 font-medium">
                         Subject
                       </Label>
                       <Select
@@ -516,10 +520,10 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, subject: value })
                         }
                       >
-                        <SelectTrigger className="mt-2 bg-slate-800/50 border-slate-700 text-white">
+                        <SelectTrigger className="mt-3 bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
                           <SelectValue placeholder="Select a subject" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
                           <SelectItem value="Computer Science">Computer Science</SelectItem>
                           <SelectItem value="Mathematics">Mathematics</SelectItem>
                           <SelectItem value="Physics">Physics</SelectItem>
@@ -536,7 +540,7 @@ export default function CreateQuizPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="questionCount" className="text-slate-300">
+                      <Label htmlFor="questionCount" className="text-slate-300 font-medium">
                         Number of Questions
                       </Label>
                       <Select
@@ -545,10 +549,10 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, questionCount: parseInt(value) })
                         }
                       >
-                        <SelectTrigger className="mt-2 bg-slate-800/50 border-slate-700 text-white">
+                        <SelectTrigger className="mt-3 bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
                           <SelectItem value="5">5 questions</SelectItem>
                           <SelectItem value="10">10 questions</SelectItem>
                           <SelectItem value="15">15 questions</SelectItem>
@@ -558,24 +562,24 @@ export default function CreateQuizPage() {
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 mb-3 block">
+                      <Label className="text-slate-300 font-medium mb-4 block">
                         Difficulty Level
                       </Label>
                       <div className="grid grid-cols-3 gap-3">
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, difficulty: "easy" })}
-                          className={`p-4 rounded-xl border-2 transition-all ${
+                          className={`p-4 rounded-2xl border-2 transition-all ${
                             formData.difficulty === "easy"
-                              ? "border-green-500 bg-green-500/10"
-                              : "border-slate-700 hover:border-slate-600"
+                              ? "border-emerald-500 bg-emerald-500/10"
+                              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
                           <Zap className={`w-6 h-6 mx-auto mb-2 ${
-                            formData.difficulty === "easy" ? "text-green-400" : "text-slate-400"
+                            formData.difficulty === "easy" ? "text-emerald-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-medium ${
-                            formData.difficulty === "easy" ? "text-green-400" : "text-slate-300"
+                          <p className={`text-sm font-semibold ${
+                            formData.difficulty === "easy" ? "text-emerald-400" : "text-slate-300"
                           }`}>Easy</p>
                           <p className="text-xs text-slate-500 mt-1">Basic recall</p>
                         </button>
@@ -583,17 +587,17 @@ export default function CreateQuizPage() {
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, difficulty: "medium" })}
-                          className={`p-4 rounded-xl border-2 transition-all ${
+                          className={`p-4 rounded-2xl border-2 transition-all ${
                             formData.difficulty === "medium"
-                              ? "border-yellow-500 bg-yellow-500/10"
-                              : "border-slate-700 hover:border-slate-600"
+                              ? "border-amber-500 bg-amber-500/10"
+                              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
                           <Flame className={`w-6 h-6 mx-auto mb-2 ${
-                            formData.difficulty === "medium" ? "text-yellow-400" : "text-slate-400"
+                            formData.difficulty === "medium" ? "text-amber-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-medium ${
-                            formData.difficulty === "medium" ? "text-yellow-400" : "text-slate-300"
+                          <p className={`text-sm font-semibold ${
+                            formData.difficulty === "medium" ? "text-amber-400" : "text-slate-300"
                           }`}>Medium</p>
                           <p className="text-xs text-slate-500 mt-1">Understanding</p>
                         </button>
@@ -601,16 +605,16 @@ export default function CreateQuizPage() {
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, difficulty: "hard" })}
-                          className={`p-4 rounded-xl border-2 transition-all ${
+                          className={`p-4 rounded-2xl border-2 transition-all ${
                             formData.difficulty === "hard"
                               ? "border-red-500 bg-red-500/10"
-                              : "border-slate-700 hover:border-slate-600"
+                              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
                           <Trophy className={`w-6 h-6 mx-auto mb-2 ${
                             formData.difficulty === "hard" ? "text-red-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-medium ${
+                          <p className={`text-sm font-semibold ${
                             formData.difficulty === "hard" ? "text-red-400" : "text-slate-300"
                           }`}>Hard</p>
                           <p className="text-xs text-slate-500 mt-1">Application</p>
@@ -619,7 +623,7 @@ export default function CreateQuizPage() {
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 mb-2 block">
+                      <Label className="text-slate-300 font-medium mb-3 block">
                         Question Type
                       </Label>
                       <Select
@@ -628,10 +632,10 @@ export default function CreateQuizPage() {
                           setFormData({ ...formData, questionTypes: [value] })
                         }
                       >
-                        <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                        <SelectTrigger className="bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
                           <SelectItem value="mcq">Multiple Choice</SelectItem>
                           <SelectItem value="true_false">True/False</SelectItem>
                           <SelectItem value="fill_blank">Fill in the Blanks</SelectItem>
@@ -641,24 +645,24 @@ export default function CreateQuizPage() {
 
                     {/* Timer Settings */}
                     <div>
-                      <Label className="text-slate-300 mb-3 block">
+                      <Label className="text-slate-300 font-medium mb-4 block">
                         Timer Settings
                       </Label>
                       <div className="grid grid-cols-3 gap-3">
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, timerMode: "none" })}
-                          className={`p-4 rounded-xl border-2 transition-all ${
+                          className={`p-4 rounded-2xl border-2 transition-all ${
                             formData.timerMode === "none"
-                              ? "border-slate-500 bg-slate-500/10"
-                              : "border-slate-700 hover:border-slate-600"
+                              ? "border-white bg-white/5"
+                              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
                           <TimerOff className={`w-6 h-6 mx-auto mb-2 ${
-                            formData.timerMode === "none" ? "text-slate-300" : "text-slate-400"
+                            formData.timerMode === "none" ? "text-white" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-medium ${
-                            formData.timerMode === "none" ? "text-slate-300" : "text-slate-400"
+                          <p className={`text-sm font-semibold ${
+                            formData.timerMode === "none" ? "text-white" : "text-slate-400"
                           }`}>No Timer</p>
                           <p className="text-xs text-slate-500 mt-1">Relaxed</p>
                         </button>
@@ -666,17 +670,17 @@ export default function CreateQuizPage() {
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, timerMode: "quiz", timeLimit: 10 })}
-                          className={`p-4 rounded-xl border-2 transition-all ${
+                          className={`p-4 rounded-2xl border-2 transition-all ${
                             formData.timerMode === "quiz"
-                              ? "border-blue-500 bg-blue-500/10"
-                              : "border-slate-700 hover:border-slate-600"
+                              ? "border-indigo-500 bg-indigo-500/10"
+                              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
                           <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                            formData.timerMode === "quiz" ? "text-blue-400" : "text-slate-400"
+                            formData.timerMode === "quiz" ? "text-indigo-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-medium ${
-                            formData.timerMode === "quiz" ? "text-blue-400" : "text-slate-300"
+                          <p className={`text-sm font-semibold ${
+                            formData.timerMode === "quiz" ? "text-indigo-400" : "text-slate-300"
                           }`}>Per Quiz</p>
                           <p className="text-xs text-slate-500 mt-1">Total time</p>
                         </button>
@@ -684,16 +688,16 @@ export default function CreateQuizPage() {
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, timerMode: "question", timeLimit: 30 })}
-                          className={`p-4 rounded-xl border-2 transition-all ${
+                          className={`p-4 rounded-2xl border-2 transition-all ${
                             formData.timerMode === "question"
                               ? "border-orange-500 bg-orange-500/10"
-                              : "border-slate-700 hover:border-slate-600"
+                              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
                           }`}
                         >
                           <Timer className={`w-6 h-6 mx-auto mb-2 ${
                             formData.timerMode === "question" ? "text-orange-400" : "text-slate-400"
                           }`} />
-                          <p className={`text-sm font-medium ${
+                          <p className={`text-sm font-semibold ${
                             formData.timerMode === "question" ? "text-orange-400" : "text-slate-300"
                           }`}>Per Question</p>
                           <p className="text-xs text-slate-500 mt-1">Time each</p>
@@ -701,55 +705,58 @@ export default function CreateQuizPage() {
                       </div>
 
                       {/* Time Limit Selector */}
-                      {formData.timerMode !== "none" && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="mt-4"
-                        >
-                          <Label className="text-slate-400 text-sm mb-2 block">
-                            {formData.timerMode === "quiz" ? "Total Quiz Time" : "Time Per Question"}
-                          </Label>
-                          <Select
-                            value={formData.timeLimit.toString()}
-                            onValueChange={(value) =>
-                              setFormData({ ...formData, timeLimit: parseInt(value) })
-                            }
+                      <AnimatePresence>
+                        {formData.timerMode !== "none" && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-4 overflow-hidden"
                           >
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {formData.timerMode === "quiz" ? (
-                                <>
-                                  <SelectItem value="5">5 minutes</SelectItem>
-                                  <SelectItem value="10">10 minutes</SelectItem>
-                                  <SelectItem value="15">15 minutes</SelectItem>
-                                  <SelectItem value="20">20 minutes</SelectItem>
-                                  <SelectItem value="30">30 minutes</SelectItem>
-                                </>
-                              ) : (
-                                <>
-                                  <SelectItem value="15">15 seconds</SelectItem>
-                                  <SelectItem value="30">30 seconds</SelectItem>
-                                  <SelectItem value="45">45 seconds</SelectItem>
-                                  <SelectItem value="60">60 seconds</SelectItem>
-                                  <SelectItem value="90">90 seconds</SelectItem>
-                                </>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </motion.div>
-                      )}
+                            <Label className="text-slate-400 text-sm mb-3 block">
+                              {formData.timerMode === "quiz" ? "Total Quiz Time" : "Time Per Question"}
+                            </Label>
+                            <Select
+                              value={formData.timeLimit.toString()}
+                              onValueChange={(value) =>
+                                setFormData({ ...formData, timeLimit: parseInt(value) })
+                              }
+                            >
+                              <SelectTrigger className="bg-white/[0.02] border-white/10 text-white h-12 rounded-xl">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-900/95 border-white/10 backdrop-blur-xl">
+                                {formData.timerMode === "quiz" ? (
+                                  <>
+                                    <SelectItem value="5">5 minutes</SelectItem>
+                                    <SelectItem value="10">10 minutes</SelectItem>
+                                    <SelectItem value="15">15 minutes</SelectItem>
+                                    <SelectItem value="20">20 minutes</SelectItem>
+                                    <SelectItem value="30">30 minutes</SelectItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <SelectItem value="15">15 seconds</SelectItem>
+                                    <SelectItem value="30">30 seconds</SelectItem>
+                                    <SelectItem value="45">45 seconds</SelectItem>
+                                    <SelectItem value="60">60 seconds</SelectItem>
+                                    <SelectItem value="90">90 seconds</SelectItem>
+                                  </>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex gap-4 mt-8">
                     <Button
                       onClick={() => setStep(2)}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 h-14 rounded-xl font-semibold border-white/10 bg-transparent text-white hover:bg-white/5"
                       disabled={isGenerating}
                     >
                       Back
@@ -757,7 +764,7 @@ export default function CreateQuizPage() {
                     <Button
                       onClick={handleNext}
                       disabled={isGenerating}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      className="flex-1 bg-white text-slate-950 hover:bg-slate-100 h-14 rounded-xl font-semibold text-base disabled:opacity-50"
                     >
                       {isGenerating ? (
                         <>
@@ -772,33 +779,42 @@ export default function CreateQuizPage() {
                       )}
                     </Button>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Loading State */}
-          {isGenerating && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-8"
-            >
-              <Card className="p-8 bg-gradient-to-br from-purple-900/20 to-slate-900/20 border-purple-500/20 backdrop-blur text-center">
-                <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                  <Sparkles className="w-8 h-8 text-purple-400" />
+          <AnimatePresence>
+            {isGenerating && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="mt-8"
+              >
+                <div className="rounded-3xl border border-indigo-500/20 bg-indigo-500/5 backdrop-blur-xl p-8 text-center">
+                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Sparkles className="w-8 h-8 text-indigo-400" />
+                    </motion.div>
+                  </div>
+                  <h3 className="font-playfair text-xl font-bold text-white mb-2">
+                    AI is Reading Your Notes...
+                  </h3>
+                  <p className="text-slate-400">
+                    Generating personalized questions. This takes about 10 seconds.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">
-                  AI is Reading Your Notes...
-                </h3>
-                <p className="text-slate-400">
-                  Generating personalized questions. This takes about 10 seconds.
-                </p>
-              </Card>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
