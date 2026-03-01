@@ -54,21 +54,14 @@ export async function POST(request: NextRequest) {
     // Lazy-load parsers to avoid module-level crashes on Vercel
     switch (fileType) {
       case "pdf":
-        // Use pdf-parse with custom page render to avoid Vercel bundling issues
-        // pdf-parse tries to load test files by default which fails on serverless
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pdfParseModule = await import("pdf-parse") as any;
-        const pdfParse = pdfParseModule.default || pdfParseModule;
-        const pdfData = await pdfParse(buffer, {
-          // Custom render bypasses the default test file loading
-          pagerender: function(pageData: any) {
-            return pageData.getTextContent().then(function(textContent: any) {
-              return textContent.items.map((item: any) => item.str).join(' ');
-            });
-          }
-        });
-        extractedText = pdfData.text || "";
-        pages = pdfData.numpages;
+        // Use unpdf — serverless-friendly PDF text extraction (no worker issues)
+        const { extractText } = await import("unpdf");
+        const pdfResult = await extractText(new Uint8Array(buffer));
+        // pdfResult.text is a string[] (one per page), join into single string
+        extractedText = Array.isArray(pdfResult.text)
+          ? pdfResult.text.join("\n\n")
+          : String(pdfResult.text || "");
+        pages = pdfResult.totalPages;
         break;
 
       case "docx":
