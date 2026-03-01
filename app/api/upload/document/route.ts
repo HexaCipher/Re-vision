@@ -6,6 +6,10 @@ import * as mammoth from "mammoth";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require("pdf-parse");
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
 // Supported file types
 const SUPPORTED_TYPES = {
   "application/pdf": "pdf",

@@ -1,9 +1,9 @@
 {
   "functions": {
-    "app/api/generate-quiz/route.ts": {
+    "api/generate-quiz": {
       "maxDuration": 60
     },
-    "app/api/upload/document/route.ts": {
+    "api/upload/document": {
       "maxDuration": 30
     }
   }
