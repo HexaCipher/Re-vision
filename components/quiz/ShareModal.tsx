@@ -75,10 +75,10 @@ export default function ShareModal({ quizId, quizTitle, isOpen, onClose }: Share
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
+      <DialogContent className="bg-slate-950 border-white/10 text-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-purple-400" />
+            <Share2 className="w-5 h-5 text-indigo-400" />
             Share Quiz
           </DialogTitle>
           <DialogDescription className="text-slate-400">
@@ -89,8 +89,8 @@ export default function ShareModal({ quizId, quizTitle, isOpen, onClose }: Share
         <div className="space-y-4 py-4">
           {!shareUrl ? (
             <div className="text-center py-6">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <LinkIcon className="w-8 h-8 text-purple-400" />
+              <div className="w-16 h-16 bg-indigo-500/15 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+                <LinkIcon className="w-8 h-8 text-indigo-400" />
               </div>
               <p className="text-slate-300 mb-4">
                 Generate a shareable link so anyone can take this quiz
@@ -98,7 +98,7 @@ export default function ShareModal({ quizId, quizTitle, isOpen, onClose }: Share
               <Button
                 onClick={generateShareLink}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                className="bg-white text-slate-950 hover:bg-slate-100 font-semibold rounded-xl"
               >
                 {isLoading ? (
                   <>
@@ -124,15 +124,15 @@ export default function ShareModal({ quizId, quizTitle, isOpen, onClose }: Share
                     id="shareUrl"
                     value={shareUrl}
                     readOnly
-                    className="bg-slate-800/50 border-slate-700 text-white text-sm"
+                    className="bg-white/5 border-white/10 text-white text-sm"
                   />
                   <Button
                     onClick={copyToClipboard}
                     variant="outline"
-                    className="shrink-0"
+                    className="shrink-0 border-white/10 hover:bg-white/5"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 text-green-400" />
+                      <Check className="w-4 h-4 text-emerald-400" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
@@ -140,7 +140,7 @@ export default function ShareModal({ quizId, quizTitle, isOpen, onClose }: Share
                 </div>
               </div>
 
-              <div className="bg-slate-800/50 rounded-lg p-4">
+              <div className="bg-white/[0.02] rounded-xl p-4 border border-white/10">
                 <p className="text-sm text-slate-400">
                   Anyone with this link can:
                 </p>
@@ -153,7 +153,7 @@ export default function ShareModal({ quizId, quizTitle, isOpen, onClose }: Share
 
               <Button
                 onClick={copyToClipboard}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                className="w-full bg-white text-slate-950 hover:bg-slate-100 font-semibold rounded-xl"
               >
                 {copied ? (
                   <>

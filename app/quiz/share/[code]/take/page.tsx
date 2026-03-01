@@ -7,11 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Brain, Clock, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Brain, Clock, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { QuizLoader } from "@/components/ui/QuizLoader";
 
 interface Question {
   id: string;
@@ -112,18 +113,7 @@ export default function SharedQuizTakePage() {
   };
 
   if (loading || !quiz) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
-        <div 
-          className="fixed inset-0 -z-10 pointer-events-none"
-          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)" }}
-        />
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-indigo-500 mx-auto mb-4" />
-          <p className="text-slate-400">Loading quiz...</p>
-        </div>
-      </div>
-    );
+    return <QuizLoader />;
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];

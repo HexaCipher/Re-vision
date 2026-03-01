@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import QuizTakingClient from "@/components/quiz/QuizTakingClient";
-import { Loader2 } from "lucide-react";
+import { QuizLoader } from "@/components/ui/QuizLoader";
 
 interface Quiz {
   id: string;
@@ -71,24 +71,17 @@ export default function QuizTakePage() {
   };
 
   if (loading || !isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" />
-          <p className="text-slate-400">Loading quiz...</p>
-        </div>
-      </div>
-    );
+    return <QuizLoader />;
   }
 
   if (error || !quiz) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)" }}>
         <div className="text-center">
           <p className="text-red-400 mb-4">{error || "Quiz not found"}</p>
           <button
             onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="px-4 py-2 bg-white text-slate-950 rounded-xl hover:bg-slate-100 transition-colors font-semibold"
           >
             Go to Dashboard
           </button>
