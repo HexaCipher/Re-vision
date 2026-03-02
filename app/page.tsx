@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Upload, Sparkles, Trophy, Zap,
   CheckCircle2, Circle, BookOpen, Clock, TrendingUp,
-  Menu, X,
+  Menu, X, Youtube, Play,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
@@ -16,8 +16,8 @@ const steps = [
   {
     icon: Upload,
     number: "01",
-    title: "Upload your notes",
-    body: "Paste text or drop a PDF, DOCX, or TXT file. Any subject, any length — from a single page to entire textbooks.",
+    title: "Upload your content",
+    body: "Paste text, drop a PDF, or paste a YouTube link. Any subject, any length — from lecture videos to entire textbooks.",
   },
   {
     icon: Sparkles,
@@ -351,15 +351,20 @@ function Rule() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Only attach scroll tracking after mount to avoid hydration mismatch
+  const { scrollYProgress } = useScroll({ 
+    target: mounted ? heroRef : undefined, 
+    offset: ["start start", "end start"] 
+  });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
 
   if (!mounted) {
     return (
@@ -476,9 +481,9 @@ export default function LandingPage() {
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold leading-[1.02] tracking-tight text-white mb-5 sm:mb-8"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
-              Turn notes
+              A New Vision
               <br />
-              <span className="text-slate-400">into mastery.</span>
+              <span className="text-slate-400">for Revision.</span>
             </motion.h1>
 
             <motion.p
@@ -487,7 +492,7 @@ export default function LandingPage() {
               transition={{ duration: 0.7, delay: 0.35 }}
               className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-400 font-light max-w-lg mb-8 sm:mb-12 leading-relaxed"
             >
-              Upload your study notes. Get a quiz in 10 seconds.
+              Upload notes or paste a YouTube link. Get a quiz in 10 seconds.
               Stop re-reading — start recalling.
             </motion.p>
 
@@ -568,84 +573,157 @@ export default function LandingPage() {
         </motion.div>
 
         {/* Bento grid - responsive */}
-        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Large feature card — spans 2 cols on lg */}
+        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 group/bento">
+          
+          {/* YouTube Feature Card — NEW HIGHLIGHT — spans 2 cols on lg */}
           <motion.div
-            {...fadeUpProps(0.1)}
-            className="lg:col-span-2 relative rounded-2xl sm:rounded-[2rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.08] to-transparent p-6 sm:p-8 md:p-10 lg:p-12 overflow-hidden group"
+            {...fadeUpProps(0.05)}
+            className="lg:col-span-2 relative rounded-2xl sm:rounded-[2rem] border border-red-500/20 bg-gradient-to-br from-red-500/[0.08] to-transparent p-6 sm:p-8 md:p-10 lg:p-12 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-red-500/40 hover:z-10 group-hover/bento:blur-[2px] hover:!blur-none group-hover/bento:opacity-70 hover:!opacity-100"
           >
-            <div className="pointer-events-none absolute top-0 right-0 w-60 sm:w-80 h-60 sm:h-80 bg-amber-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+            <div className="pointer-events-none absolute top-0 right-0 w-60 sm:w-80 h-60 sm:h-80 bg-red-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
             
             <div className="relative z-10">
-              <div className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-6 sm:mb-8">
-                <Clock className="w-6 h-6 sm:w-7 md:w-8 sm:h-7 md:h-8 text-amber-400" />
+              <div className="flex items-center gap-3 mb-6 sm:mb-8">
+                <div className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 rounded-xl sm:rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+                  <Youtube className="w-6 h-6 sm:w-7 md:w-8 sm:h-7 md:h-8 text-red-400" />
+                </div>
+                <span className="px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+                  New Feature
+                </span>
               </div>
               
-              <div className="flex items-end gap-2 sm:gap-4 mb-3 sm:mb-4">
-                <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-amber-400" style={{ fontFamily: "var(--font-playfair)" }}>
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">YouTube to Quiz</h3>
+              <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-lg mb-6 sm:mb-8">
+                Paste any YouTube lecture link. Our AI extracts the transcript, filters out the fluff, 
+                and generates a quiz focused on the actual educational content.
+              </p>
+              
+              {/* Mini demo */}
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white/[0.03] border border-white/8 max-w-md">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 ml-0.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm sm:text-base text-white font-medium truncate">youtube.com/watch?v=...</p>
+                  <p className="text-xs sm:text-sm text-slate-500">Paste link → Get quiz instantly</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* 10 seconds card — now single column */}
+          <motion.div
+            {...fadeUpProps(0.1)}
+            className="relative rounded-2xl sm:rounded-[2rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-amber-500/40 hover:z-10 group-hover/bento:blur-[2px] hover:!blur-none group-hover/bento:opacity-70 hover:!opacity-100"
+          >
+            <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-amber-500/10 rounded-full blur-[60px]" />
+            
+            <div className="relative z-10">
+              <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-4 sm:mb-6">
+                <Clock className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-amber-400" />
+              </div>
+              
+              <div className="flex items-end gap-2 mb-2 sm:mb-3">
+                <span className="text-4xl sm:text-5xl font-bold text-amber-400" style={{ fontFamily: "var(--font-playfair)" }}>
                   <AnimatedNumber value={10} />
                 </span>
-                <span className="text-xl sm:text-2xl md:text-3xl text-amber-400/70 mb-1 sm:mb-3 font-medium">seconds</span>
+                <span className="text-lg sm:text-xl text-amber-400/70 mb-1 font-medium">sec</span>
               </div>
               
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">From notes to quiz</h3>
-              <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-lg">
-                No manual question writing. Just paste your notes and the quiz is ready before you finish your coffee. 
-                AI does the heavy lifting so you can focus on learning.
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Instant generation</h3>
+              <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+                AI creates your quiz before you finish your coffee.
               </p>
             </div>
           </motion.div>
 
-          {/* Two stacked cards */}
-          <div className="flex flex-col gap-4 sm:gap-6">
-            <motion.div
-              {...fadeUpProps(0.2)}
-              className="relative flex-1 rounded-2xl sm:rounded-[2rem] border border-indigo-500/20 bg-gradient-to-br from-indigo-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden group"
-            >
-              <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-indigo-500/10 rounded-full blur-[60px]" />
-              
-              <div className="relative z-10">
-                <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-4 sm:mb-6">
-                  <TrendingUp className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-indigo-400" />
-                </div>
-                
-                <div className="flex items-end gap-2 mb-2 sm:mb-3">
-                  <span className="text-4xl sm:text-5xl font-bold text-indigo-400" style={{ fontFamily: "var(--font-playfair)" }}>
-                    <AnimatedNumber value={50} suffix="%" />
-                  </span>
-                </div>
-                
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Better retention</h3>
-                <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-                  Active recall beats re-reading. Science proves it.
-                </p>
+          {/* Second row: 3 cards */}
+          <motion.div
+            {...fadeUpProps(0.2)}
+            className="relative rounded-2xl sm:rounded-[2rem] border border-indigo-500/20 bg-gradient-to-br from-indigo-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-indigo-500/40 hover:z-10 group-hover/bento:blur-[2px] hover:!blur-none group-hover/bento:opacity-70 hover:!opacity-100"
+          >
+            <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-indigo-500/10 rounded-full blur-[60px]" />
+            
+            <div className="relative z-10">
+              <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-4 sm:mb-6">
+                <TrendingUp className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-indigo-400" />
               </div>
-            </motion.div>
+              
+              <div className="flex items-end gap-2 mb-2 sm:mb-3">
+                <span className="text-4xl sm:text-5xl font-bold text-indigo-400" style={{ fontFamily: "var(--font-playfair)" }}>
+                  <AnimatedNumber value={50} suffix="%" />
+                </span>
+              </div>
+              
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Better retention</h3>
+              <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+                Active recall beats re-reading. Science proves it.
+              </p>
+            </div>
+          </motion.div>
 
-            <motion.div
-              {...fadeUpProps(0.3)}
-              className="relative flex-1 rounded-2xl sm:rounded-[2rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden group"
-            >
-              <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-emerald-500/10 rounded-full blur-[60px]" />
-              
-              <div className="relative z-10">
-                <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-4 sm:mb-6">
-                  <BookOpen className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-emerald-400" />
-                </div>
-                
-                <div className="flex items-end gap-2 mb-2 sm:mb-3">
-                  <span className="text-4xl sm:text-5xl font-bold text-emerald-400" style={{ fontFamily: "var(--font-playfair)" }}>
-                    Any
-                  </span>
-                </div>
-                
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Subject supported</h3>
-                <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-                  History, biology, code, law — AI understands it all.
-                </p>
+          <motion.div
+            {...fadeUpProps(0.3)}
+            className="relative rounded-2xl sm:rounded-[2rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.08] to-transparent p-5 sm:p-6 md:p-8 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/40 hover:z-10 group-hover/bento:blur-[2px] hover:!blur-none group-hover/bento:opacity-70 hover:!opacity-100"
+          >
+            <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-emerald-500/10 rounded-full blur-[60px]" />
+            
+            <div className="relative z-10">
+              <div className="w-11 h-11 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-4 sm:mb-6">
+                <BookOpen className="w-5 h-5 sm:w-6 md:w-7 sm:h-6 md:h-7 text-emerald-400" />
               </div>
-            </motion.div>
-          </div>
+              
+              <div className="flex items-end gap-2 mb-2 sm:mb-3">
+                <span className="text-4xl sm:text-5xl font-bold text-emerald-400" style={{ fontFamily: "var(--font-playfair)" }}>
+                  Any
+                </span>
+              </div>
+              
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">Subject supported</h3>
+              <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+                History, biology, code, law — AI understands it all.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Powered by AI Card */}
+          <motion.div
+            {...fadeUpProps(0.35)}
+            className="relative rounded-2xl sm:rounded-[2rem] border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.06] via-transparent to-cyan-500/[0.06] p-4 sm:p-5 md:p-6 overflow-hidden flex flex-col justify-between h-full transition-all duration-300 hover:scale-[1.02] hover:border-violet-500/40 hover:z-10 group-hover/bento:blur-[2px] hover:!blur-none group-hover/bento:opacity-70 hover:!opacity-100"
+          >
+            <div className="pointer-events-none absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-violet-500/10 rounded-full blur-[60px]" />
+            
+            <div className="relative z-10 flex flex-col h-full">
+              <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3 sm:mb-4">Powered by</p>
+              
+              {/* Side by side logos */}
+              <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-3">
+                {/* Gemini */}
+                <div className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-white/[0.04] border border-white/10">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center mb-2 sm:mb-3">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                      <polyline points="2 17 12 22 22 17"/>
+                      <polyline points="2 12 12 17 22 12"/>
+                    </svg>
+                  </div>
+                  <p className="text-sm sm:text-base font-semibold text-white">Gemini</p>
+                  <p className="text-xs text-slate-500">Google AI</p>
+                </div>
+                
+                {/* Groq */}
+                <div className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-white/[0.04] border border-white/10">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-2 sm:mb-3">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="currentColor">
+                      <path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"/>
+                    </svg>
+                  </div>
+                  <p className="text-sm sm:text-base font-semibold text-white">Groq</p>
+                  <p className="text-xs text-slate-500">LPU Inference</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
