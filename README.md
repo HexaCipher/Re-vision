@@ -2,24 +2,49 @@
 
 **Transform your study notes into interactive quizzes — powered by AI.**
 
-Re-vision is a full-stack web application that lets students upload or paste their notes and instantly generate personalized, exam-style quizzes using Google Gemini. Built for active recall and spaced repetition, it turns passive reading into an engaging learning loop.
+Re-vision is a full-stack Progressive Web App that lets students upload or paste their notes and instantly generate personalized, exam-style quizzes using Google Gemini. Built for active recall and spaced repetition, it turns passive reading into an engaging learning loop — installable on any device, works offline.
 
 ---
 
 ## Features
 
-- **AI Quiz Generation** — paste text, upload a PDF/DOCX/TXT file, or drop a YouTube link; AI produces targeted questions in under 10 seconds
+### Core
+- **AI Quiz Generation** — paste text, upload a PDF/DOCX/TXT, or drop a YouTube link; AI produces targeted questions in under 10 seconds
 - **YouTube Transcript Extraction** — paste any YouTube URL (watch, shorts, live, embed) and the transcript is fetched automatically with video thumbnail and title preview
-- **Dual AI Providers** — Gemini 2.5 Flash (primary) with automatic Groq Llama 3.3 70B fallback when rate-limited. Users never see a "rate limited" error
+- **Dual AI Providers** — Gemini 2.0 Flash (primary) with automatic Groq Llama 3.3 70B fallback when rate-limited. Users never see a "rate limited" error
 - **Multiple Question Types** — multiple choice, true/false, and fill-in-the-blank
 - **Difficulty Levels** — easy, medium, or hard
 - **Timer Modes** — no timer, per-quiz countdown, or per-question countdown
-- **Instant Feedback** — correct/incorrect with explanations on the review page
+- **Instant Feedback** — correct/incorrect with full explanations on the review page
 - **Attempt History** — score tracking across retakes with personal best detection
-- **Shareable Quizzes** — generate a share code so anyone can take your quiz as a guest
+- **Shareable Quizzes** — generate a share code so anyone can take your quiz as a guest (with leaderboard)
 - **Dashboard** — manage all your quizzes, view difficulty badges, delete with confirmation
 - **Authentication** — secure sign-up/sign-in via Clerk
 - **Confetti** — fires on scores 70%+ because students deserve it
+
+### PWA (Progressive Web App)
+- **Installable** — add to home screen on Android, iOS, and desktop Chrome/Edge
+- **Offline support** — static assets and recently viewed quizzes cached via service worker
+- **Install banner** — dismissible in-app prompt to install when `beforeinstallprompt` fires
+- **Offline banner** — detects network loss and shows a reconnecting indicator
+- **Theme color** — `#0a0a0f` matches the dark UI for a native-app feel
+- **Service worker** — built with `@serwist/next` using StaleWhileRevalidate for assets and NetworkFirst for quiz data
+
+### Landing Page
+- Animated hero with live quiz widget demo
+- Bento feature grid: YouTube-to-quiz, instant generation, PWA offline, AI providers, retention stats, subject breadth
+- Vertical timeline "How it works" section
+- Anchor navigation — **Features** and **How it works** links in navbar scroll to sections smoothly
+- Mobile-responsive hamburger menu with same anchor links
+- Animated number counters, Framer Motion scroll transitions
+- CTA section with results widget demo
+
+### UI / Brand
+- **"R" wordmark logo** — pure SVG vector path, no font dependency, renders correctly on Vercel and in favicons
+- **Full white wordmark** — "Re-vision" in clean white, Space Grotesk Bold
+- **Favicon** — pure SVG vector "R" built from primitives (no `<text>` font dependency — works everywhere including Vercel CDN)
+- **Waving hand** on dashboard welcome message
+- Permanently dark design — charcoal background, `bg-white/[0.02]` cards, indigo/violet accent palette
 
 ---
 
@@ -29,80 +54,74 @@ Re-vision is a full-stack web application that lets students upload or paste the
 
 | Technology | Role | Why |
 |---|---|---|
-| **Next.js 16** (App Router) | Full-stack React framework | Server-side rendering, API routes, file-based routing, and middleware — all in one. The App Router enables streaming, server components, and parallel route loading for a fast user experience. |
-| **TypeScript** | Type-safe JavaScript | Catches bugs at compile time, provides IntelliSense, and makes the codebase self-documenting. Essential for a multi-file project with shared types across frontend and API routes. |
-| **React 19** | UI library | Latest React with server components support, improved hydration, and concurrent features. Powers the interactive quiz-taking experience and real-time state management. |
+| **Next.js 16** (App Router) | Full-stack React framework | Server-side rendering, API routes, file-based routing, and middleware. App Router enables streaming, server components, and parallel route loading. |
+| **TypeScript** | Type-safe JavaScript | Catches bugs at compile time, provides IntelliSense, and makes the codebase self-documenting. |
+| **React 19** | UI library | Latest React with server components, improved hydration, and concurrent features. |
 
 ### Styling & UI
 
 | Technology | Role | Why |
 |---|---|---|
-| **Tailwind CSS v4** | Utility-first CSS framework | Rapid UI development with zero-runtime CSS. v4 brings native CSS layers, automatic content detection, and smaller bundle sizes compared to v3. |
-| **Shadcn/ui** | Pre-built UI components | High-quality, accessible, and customisable components (buttons, dialogs, inputs, cards) built on Radix UI primitives. Not a dependency — components are copied into the project for full control. |
-| **Radix UI** | Headless UI primitives | Provides unstyled, accessible primitives (dropdowns, modals, radio groups) that Shadcn/ui builds on. Handles focus management, keyboard navigation, and ARIA attributes correctly. |
-| **Framer Motion v12** | Animation library | Declarative, physics-based animations for page transitions, card reveals, and micro-interactions. Adds polish without complex CSS keyframes. |
-| **Lucide React** | Icon library | Consistent, lightweight SVG icons. Tree-shakeable so only imported icons are bundled. |
-| **Playfair Display + Inter** | Typography (Google Fonts) | Playfair Display for elegant serif headings, Inter for clean sans-serif body text. Pairing creates visual hierarchy and a premium feel. |
+| **Tailwind CSS v4** | Utility-first CSS | CSS-based config via `@theme inline {}`. Native CSS layers, automatic content detection, smaller bundle. |
+| **Shadcn/ui** | Pre-built components | Accessible, customisable components on Radix UI primitives. Copied into project for full control. |
+| **Framer Motion v12** | Animation library | Declarative physics-based animations for page transitions, bento card hovers, and scroll reveals. |
+| **Lucide React** | Icon library | Consistent, lightweight, tree-shakeable SVG icons. |
+| **Space Grotesk + Playfair Display + Inter** | Typography | Space Grotesk for brand/logo, Playfair Display for elegant serif headings, Inter for body text. |
+
+### PWA
+
+| Technology | Role | Why |
+|---|---|---|
+| **@serwist/next v9.5.6** | Service worker generation | Compatible with Next.js 16. Generates a typed TypeScript service worker with route-level caching strategies. `next-pwa` was removed — incompatible with Turbopack. |
+| **serwist v9.5.6** | Service worker runtime | Provides `StaleWhileRevalidate`, `NetworkFirst`, `NetworkOnly` handler classes used in `app/sw.ts`. |
+| **app/manifest.ts** | Dynamic web manifest | Next.js 16 typed manifest route. Serves at `/manifest.webmanifest` with correct MIME type. |
 
 ### Authentication
 
 | Technology | Role | Why |
 |---|---|---|
-| **Clerk** | Authentication & user management | Drop-in auth with sign-up, sign-in, OAuth providers, and session management. Handles JWT tokens, middleware protection, and user metadata. Zero custom auth code needed — more secure than rolling our own. |
-| **@clerk/nextjs** | Next.js integration | Provides `<ClerkProvider>`, `auth()` helper, and middleware for protecting routes. Seamless integration with App Router. |
-| **@clerk/themes** | Clerk UI theming | Matches Clerk's pre-built sign-in/sign-up components to our dark charcoal design system. |
+| **Clerk** | Auth & user management | Drop-in sign-up/sign-in, OAuth, JWT sessions. Zero custom auth code — more secure than rolling our own. |
+| **proxy.ts** | Clerk middleware | Next.js 16 convention (`proxy.ts` not `middleware.ts`). Protects routes and allows PWA static files through. |
 
 ### Database
 
 | Technology | Role | Why |
 |---|---|---|
-| **Firebase Firestore** | NoSQL cloud database | Real-time, serverless document database. No backend to manage — reads/writes happen directly from the client SDK. Scales automatically, generous free tier (1GB storage, 50K reads/day). Perfect for storing quizzes, attempts, and share codes. |
+| **Firebase Firestore** | NoSQL cloud database | Serverless document database. Stores quizzes, attempts, and share codes. Generous free tier (1GB, 50K reads/day). |
 
 ### AI / LLM
 
 | Technology | Role | Why |
 |---|---|---|
-| **Google Gemini 2.5 Flash** | Primary AI model for quiz generation | Fast, accurate, and cost-effective. Supports structured JSON output via `responseMimeType: "application/json"`, eliminating the need for output parsing. Generates high-quality questions with explanations. |
-| **Groq (Llama 3.3 70B)** | Fallback AI model | Automatic fallback when Gemini hits rate limits (20 req/day on free tier). Groq offers 1,000 req/day free with the fastest inference speeds available. Ensures users never see a "rate limited" error. |
-| **@google/generative-ai** | Gemini SDK | Official Google AI SDK for Node.js. Handles API communication, token counting, and response streaming. |
-| **groq-sdk** | Groq SDK | Official Groq SDK. Provides OpenAI-compatible chat completions interface for Llama 3.3 70B. |
+| **Google Gemini 2.0 Flash** | Primary AI model | Fast, accurate, structured JSON output via `responseMimeType: "application/json"`. No output parsing needed. |
+| **Groq (Llama 3.3 70B)** | Fallback AI model | Auto-fallback when Gemini rate-limits (20 req/day free). 1,000 req/day free, fastest inference available. |
 
 ### YouTube Transcript Pipeline
 
 | Technology | Role | Why |
 |---|---|---|
-| **YouTube Innertube API** | Primary transcript fetcher | Direct access to YouTube's internal API using the ANDROID client. Returns caption URLs without the `exp=xpe` parameter that causes empty responses. Works from residential IPs (local dev) — free, no API key required. |
-| **Supadata** (@supadata/js) | Fallback transcript fetcher | Reliable YouTube transcript extraction that works from datacenter IPs (Vercel). Automatically engaged when innertube is blocked. Free tier: 100 transcripts/month. Solves the critical Vercel deployment blocker. |
+| **YouTube Innertube API** | Primary transcript fetcher | Direct access to YouTube's internal API (ANDROID client). No API key. Works on residential IPs (local dev). |
+| **Supadata** | Fallback transcript fetcher | Works from datacenter IPs (Vercel). Automatically engaged when innertube is blocked. 100 transcripts/month free. |
 
 ### File Parsing
 
 | Technology | Role | Why |
 |---|---|---|
-| **unpdf** | PDF text extraction | Lightweight PDF parser that extracts text content from uploaded PDF files. Works in Node.js serverless functions without native dependencies (unlike `pdf-parse`). |
-| **mammoth** | DOCX text extraction | Converts `.docx` files to plain text. Handles complex Word documents with formatting, tables, and embedded content. |
+| **unpdf** | PDF extraction | Lightweight, no native deps. Works in Node.js serverless functions on Vercel. |
+| **mammoth** | DOCX extraction | Converts `.docx` to plain text, handles complex Word documents. |
 
-### UX Enhancements
-
-| Technology | Role | Why |
-|---|---|---|
-| **Sonner** | Toast notifications | Beautiful, stackable toast notifications for success/error/warning feedback. Minimal API: `toast.success("Quiz created!")`. |
-| **canvas-confetti** | Celebration animation | Fires confetti particles when a student scores 70%+. Small reward that makes studying feel more satisfying. |
-| **next-themes** | Theme management | Handles dark/light mode switching with SSR support. Prevents flash of unstyled content on page load. |
-
-### Development Tools
+### UX
 
 | Technology | Role | Why |
 |---|---|---|
-| **ESLint** | Code linting | Catches code quality issues and enforces consistent style across the codebase. |
-| **Turbopack** | Dev server bundler | Next.js's Rust-based bundler for development. 10x faster hot module replacement compared to webpack. |
-| **PostCSS** | CSS processing | Required by Tailwind CSS v4 for processing utility classes into optimised CSS. |
-| **tw-animate-css** | Tailwind animation utilities | Adds animation utility classes (fade-in, slide-up, etc.) for Tailwind CSS. Used by Shadcn/ui components. |
+| **Sonner** | Toast notifications | Beautiful, stackable toasts. Minimal API: `toast.success(...)`. |
+| **canvas-confetti** | Celebration animation | Fires on 70%+ score. Makes studying feel rewarding. |
 
 ### Deployment
 
 | Technology | Role | Why |
 |---|---|---|
-| **Vercel** | Hosting & deployment | Purpose-built for Next.js. Automatic builds on git push, edge network CDN, serverless functions for API routes, and environment variable management. Zero-config deployment. |
+| **Vercel** | Hosting | Purpose-built for Next.js. Auto-builds, CDN, serverless API routes, env variable management. |
 
 ---
 
@@ -134,7 +153,7 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a `.env.local` file in the project root and fill in all values:
+Create a `.env.local` file in the project root:
 
 ```env
 # Clerk — https://dashboard.clerk.com → your app → API Keys
@@ -161,9 +180,9 @@ SUPADATA_API_KEY=
 
 ### 4. Set up Firebase Firestore
 
-1. Go to [Firebase Console](https://console.firebase.google.com) and create a project (or use an existing one)
+1. Create a project at [Firebase Console](https://console.firebase.google.com)
 2. Enable **Firestore Database** (start in production mode)
-3. Add the following **Firestore Security Rules** so only authenticated users can read/write their own data:
+3. Add Firestore Security Rules:
 
 ```
 rules_version = '2';
@@ -183,13 +202,13 @@ service cloud.firestore {
 }
 ```
 
-4. Copy your Firebase config values into `.env.local` (Project settings → General → Your apps → Firebase SDK snippet → Config)
+4. Copy Firebase config values into `.env.local`
 
 ### 5. Set up Clerk
 
 1. Create an application at [clerk.com](https://clerk.com)
-2. Copy the **Publishable Key** and **Secret Key** from the Clerk dashboard into `.env.local`
-3. In the Clerk dashboard, add `http://localhost:3000` to **Allowed redirect URLs**
+2. Copy **Publishable Key** and **Secret Key** into `.env.local`
+3. Add `http://localhost:3000` to **Allowed redirect URLs**
 
 ### 6. Run the development server
 
@@ -211,23 +230,39 @@ re-vision/
 │   │   ├── fetch-transcript/    # YouTube transcript (innertube → Supadata)
 │   │   ├── quizzes/[id]/        # CRUD for individual quizzes
 │   │   ├── attempts/            # Attempt recording
-│   │   ├── shared/              # Guest share flow
+│   │   ├── shared/              # Guest share flow + leaderboard
 │   │   └── upload/document/     # PDF/DOCX text extraction
 │   ├── dashboard/               # Authenticated dashboard + create flow
 │   ├── quiz/[id]/               # Take, results, review pages
 │   ├── quiz/share/[code]/       # Guest quiz flow
 │   ├── sign-in/ & sign-up/      # Clerk auth pages (custom styled)
+│   ├── manifest.ts              # Dynamic PWA web manifest
+│   ├── sw.ts                    # TypeScript service worker (serwist)
 │   └── page.tsx                 # Landing page
 ├── components/
-│   ├── ui/                      # Shared UI (Navbar, AppLogo, QuizLoader, …)
+│   ├── ui/
+│   │   ├── AppLogo.tsx          # "R" vector logo + wordmark
+│   │   ├── Navbar.tsx           # Authenticated navbar
+│   │   ├── InstallBanner.tsx    # PWA install prompt banner
+│   │   ├── OfflineBanner.tsx    # Offline/reconnecting indicator
+│   │   ├── ServiceWorkerRegistrar.tsx  # Client-side SW registration
+│   │   ├── PageTransition.tsx   # Framer Motion page wrapper
+│   │   ├── QuizLoader.tsx       # Animated loading screens
+│   │   └── ...                  # Shadcn/ui components
 │   ├── dashboard/               # Dashboard-specific components
 │   └── quiz/                    # Quiz taking, results, review clients
+├── hooks/
+│   └── useInstallPrompt.ts      # beforeinstallprompt event handler
 ├── lib/
 │   ├── db.ts                    # Firestore helpers
 │   └── firebase.ts              # Firebase initialisation
 ├── types/
 │   └── index.ts                 # Shared TypeScript types
-└── public/                      # Static assets (SVG icons, OG image)
+├── public/
+│   ├── favicon.svg              # Pure vector "R" — no font dependency
+│   └── sw.js                    # Auto-generated by serwist at build time
+├── next.config.ts               # withSerwist wrapper, turbopack: {}
+└── proxy.ts                     # Clerk middleware (Next.js 16 convention)
 ```
 
 ---
@@ -237,9 +272,11 @@ re-vision/
 | Command | Description |
 |---|---|
 | `npm run dev` | Start development server with Turbopack |
-| `npm run build` | Create optimised production build |
+| `npm run build` | Create production build (uses `--webpack` for serwist compatibility) |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+
+> **Note:** `npm run build` uses the `--webpack` flag. Serwist's webpack plugin is incompatible with Turbopack, so production builds explicitly use webpack. Development still uses Turbopack for fast HMR.
 
 ---
 
@@ -252,7 +289,7 @@ The recommended platform is [Vercel](https://vercel.com):
 3. Add all environment variables from `.env.local` in **Project → Settings → Environment Variables**
 4. Deploy — Vercel auto-detects Next.js and configures everything
 
-> **Note:** Clerk's "Development instance" banner is only visible in dev mode. It disappears automatically when you deploy with production Clerk keys on a real domain.
+> **Favicon note:** The favicon is a pure SVG vector path with no `<text>` or font dependencies. It renders correctly on Vercel's CDN without needing any web fonts loaded.
 
 ---
 
