@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Supadata } from "@supadata/js";
 
 // Vercel serverless config
 export const dynamic = "force-dynamic";
@@ -13,25 +14,9 @@ const NOISE_RE =
 const MUSIC_LINE_RE = /♪[^♪]*♪/g;
 
 // ---------------------------------------------------------------------------
-// Well-known innertube API keys — these are public, embedded in YouTube's JS.
-// Using them directly avoids scraping the YouTube page (which fails on
-// datacenter IPs like Vercel because YouTube returns consent/bot pages).
+// Innertube client config (ANDROID returns caption URLs without exp=xpe)
 // ---------------------------------------------------------------------------
 const INNERTUBE_CLIENTS = [
-  {
-    label: "WEB",
-    apiKey: "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
-    context: {
-      client: {
-        clientName: "WEB",
-        clientVersion: "2.20241126.01.00",
-        hl: "en",
-        gl: "US",
-      },
-    },
-    userAgent:
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-  },
   {
     label: "ANDROID",
     apiKey: "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
@@ -48,22 +33,32 @@ const INNERTUBE_CLIENTS = [
       "com.google.android.youtube/20.10.38 (Linux; U; Android 14; en_US)",
   },
   {
-    label: "IOS",
-    apiKey: "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc",
+    label: "WEB",
+    apiKey: "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
     context: {
       client: {
-        clientName: "IOS",
-        clientVersion: "20.10.4",
-        deviceMake: "Apple",
-        deviceModel: "iPhone16,2",
+        clientName: "WEB",
+        clientVersion: "2.20241126.01.00",
         hl: "en",
         gl: "US",
       },
     },
     userAgent:
-      "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X; en_US)",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
   },
 ] as const;
+
+// ---------------------------------------------------------------------------
+// Supadata fallback client (works from datacenter IPs)
+// ---------------------------------------------------------------------------
+const SUPADATA_API_KEY = process.env.SUPADATA_API_KEY;
+const supadata = SUPADATA_API_KEY
+  ? new Supadata({ apiKey: SUPADATA_API_KEY })
+  : null;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 /** Extract a YouTube video ID from any common URL format */
 function extractVideoId(url: string): string | null {
@@ -98,8 +93,27 @@ async function fetchVideoTitle(videoId: string): Promise<string> {
   }
 }
 
+/** Clean raw transcript text: strip noise, normalize whitespace, truncate */
+function cleanTranscript(raw: string): {
+  transcript: string;
+  wasTruncated: boolean;
+} {
+  let transcript = raw
+    .replace(NOISE_RE, "")
+    .replace(MUSIC_LINE_RE, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const wasTruncated = transcript.length > TRANSCRIPT_CHAR_LIMIT;
+  if (wasTruncated) {
+    transcript = transcript.slice(0, TRANSCRIPT_CHAR_LIMIT);
+  }
+
+  return { transcript, wasTruncated };
+}
+
 // ---------------------------------------------------------------------------
-// Transcript fetching via YouTube innertube API
+// Strategy 1: Innertube API (works from residential IPs)
 // ---------------------------------------------------------------------------
 
 interface CaptionTrack {
@@ -118,21 +132,12 @@ interface InnertubePlayerResponse {
   };
 }
 
-/**
- * Try each innertube client until one returns caption tracks.
- * On Vercel (datacenter IPs), YouTube may block certain clients —
- * cycling through WEB → ANDROID → IOS maximises our chance of success.
- */
-async function fetchCaptionTracks(
+async function fetchViaInnertube(
   videoId: string
-): Promise<CaptionTrack[]> {
-  const errors: string[] = [];
-
+): Promise<{ segments: string[]; method: string } | null> {
   for (const client of INNERTUBE_CLIENTS) {
     try {
-      console.log(
-        `[fetch-transcript] Trying innertube client: ${client.label}`
-      );
+      console.log(`[innertube] Trying ${client.label}`);
 
       const res = await fetch(
         `https://www.youtube.com/youtubei/v1/player?key=${client.apiKey}&prettyPrint=false`,
@@ -146,158 +151,166 @@ async function fetchCaptionTracks(
             Origin: "https://www.youtube.com",
             Referer: "https://www.youtube.com/",
           },
-          body: JSON.stringify({
-            context: client.context,
-            videoId,
-          }),
+          body: JSON.stringify({ context: client.context, videoId }),
         }
       );
 
       if (!res.ok) {
-        const errMsg = `${client.label} player returned ${res.status}`;
-        console.warn(`[fetch-transcript] ${errMsg}`);
-        errors.push(errMsg);
+        console.warn(`[innertube] ${client.label}: HTTP ${res.status}`);
         continue;
       }
 
       const data: InnertubePlayerResponse = await res.json();
-
-      // Check playability
       const status = data.playabilityStatus?.status;
+
       if (status && status !== "OK") {
         const reason = data.playabilityStatus?.reason || status;
-        if (reason.toLowerCase().includes("private")) {
-          throw new Error("PRIVATE");
-        }
-        if (reason.toLowerCase().includes("unavailable")) {
-          throw new Error("UNAVAILABLE");
-        }
-        // For LOGIN_REQUIRED or other errors, try next client
-        const errMsg = `${client.label}: ${reason}`;
-        console.warn(`[fetch-transcript] ${errMsg}`);
-        errors.push(errMsg);
+        if (reason.toLowerCase().includes("private")) throw new Error("PRIVATE");
+        if (reason.toLowerCase().includes("unavailable")) throw new Error("UNAVAILABLE");
+        console.warn(`[innertube] ${client.label}: ${reason}`);
         continue;
       }
 
       const tracks =
         data.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-
       if (!tracks || tracks.length === 0) {
-        const errMsg = `${client.label}: no caption tracks in response`;
-        console.warn(`[fetch-transcript] ${errMsg}`);
-        errors.push(errMsg);
+        console.warn(`[innertube] ${client.label}: no caption tracks`);
         continue;
       }
 
-      console.log(
-        `[fetch-transcript] ${client.label} returned ${tracks.length} caption track(s)`
-      );
-      return tracks;
+      // Prefer manual English → auto English → first
+      const track =
+        tracks.find((t) => t.languageCode === "en" && t.kind !== "asr") ||
+        tracks.find((t) => t.languageCode === "en") ||
+        tracks[0];
+
+      // Fetch caption XML
+      let captionUrl = track.baseUrl;
+      if (!captionUrl.includes("fmt=")) {
+        captionUrl += (captionUrl.includes("?") ? "&" : "?") + "fmt=srv3";
+      }
+
+      const xmlRes = await fetch(captionUrl, {
+        cache: "no-store",
+        headers: {
+          "User-Agent": client.userAgent,
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+
+      if (!xmlRes.ok) {
+        console.warn(`[innertube] Caption XML: HTTP ${xmlRes.status}`);
+        continue;
+      }
+
+      const xml = await xmlRes.text();
+      if (!xml || xml.length === 0) {
+        console.warn(`[innertube] Caption XML empty (exp=xpe issue)`);
+        continue;
+      }
+
+      // Parse segments from XML
+      const segments: string[] = [];
+      const re = /<(?:p|text)[^>]*>([\s\S]*?)<\/(?:p|text)>/g;
+      let match;
+      while ((match = re.exec(xml)) !== null) {
+        const text = match[1]
+          .replace(/<[^>]+>/g, "")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&nbsp;/g, " ")
+          .replace(/\n/g, " ")
+          .trim();
+        if (text) segments.push(text);
+      }
+
+      if (segments.length === 0) {
+        // Fallback: strip all XML tags
+        const plain = xml
+          .replace(/<[^>]+>/g, " ")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&nbsp;/g, " ")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+        if (plain.length > 50) segments.push(plain);
+      }
+
+      if (segments.length > 0) {
+        console.log(
+          `[innertube] ${client.label}: got ${segments.length} segments`
+        );
+        return { segments, method: `innertube-${client.label}` };
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      // Re-throw known application errors (PRIVATE, UNAVAILABLE)
       if (msg === "PRIVATE" || msg === "UNAVAILABLE") throw err;
-      const errMsg = `${client.label}: ${msg}`;
-      console.warn(`[fetch-transcript] ${errMsg}`);
-      errors.push(errMsg);
+      console.warn(`[innertube] ${client.label}: ${msg}`);
     }
   }
 
-  // All clients failed — determine the best error
-  const allErrors = errors.join("; ");
-  console.error(
-    `[fetch-transcript] All innertube clients failed: ${allErrors}`
-  );
-
-  if (allErrors.includes("no caption tracks")) {
-    throw new Error("NO_CAPTIONS");
-  }
-  throw new Error(`All innertube clients failed: ${allErrors}`);
+  return null; // All clients failed — fall through to Supadata
 }
 
-/** Fetch transcript XML from a caption track URL and parse into text segments */
-async function fetchTranscriptXml(
-  track: CaptionTrack
-): Promise<string[]> {
-  // Some caption URLs from innertube may not include fmt=srv3.
-  // Append it to ensure we get XML format.
-  let captionUrl = track.baseUrl;
-  if (!captionUrl.includes("fmt=")) {
-    captionUrl += (captionUrl.includes("?") ? "&" : "?") + "fmt=srv3";
+// ---------------------------------------------------------------------------
+// Strategy 2: Supadata API (works from datacenter IPs)
+// ---------------------------------------------------------------------------
+
+async function fetchViaSupadata(
+  videoId: string
+): Promise<{ text: string; method: string } | null> {
+  if (!supadata) {
+    console.warn("[supadata] No SUPADATA_API_KEY configured");
+    return null;
   }
 
-  console.log(
-    `[fetch-transcript] Fetching caption XML, lang=${track.languageCode}, kind=${track.kind || "manual"}`
-  );
+  try {
+    console.log("[supadata] Fetching transcript...");
 
-  const res = await fetch(captionUrl, {
-    cache: "no-store",
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-      "Accept-Language": "en-US,en;q=0.9",
-    },
-  });
+    const result = await supadata.transcript({
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      lang: "en",
+      text: true,
+    });
 
-  if (!res.ok) {
-    console.error(
-      `[fetch-transcript] Caption XML fetch failed: ${res.status}`
-    );
-    throw new Error(`Transcript XML request failed: ${res.status}`);
-  }
-
-  const xml = await res.text();
-
-  if (!xml || xml.length === 0) {
-    console.error("[fetch-transcript] Caption XML response was empty");
-    throw new Error("EMPTY_TRANSCRIPT");
-  }
-
-  console.log(
-    `[fetch-transcript] Got ${xml.length} bytes of caption XML`
-  );
-
-  // Parse <p t="..." d="...">text</p> or <text start="..." dur="...">text</text>
-  // Also handle <s> segments inside <p> tags
-  const segments: string[] = [];
-  const re = /<(?:p|text)[^>]*>([\s\S]*?)<\/(?:p|text)>/g;
-  let match;
-  while ((match = re.exec(xml)) !== null) {
-    let text = match[1]
-      .replace(/<[^>]+>/g, "") // strip inner HTML tags (<s>, etc.)
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, " ")
-      .replace(/\n/g, " ")
-      .trim();
-    if (text) segments.push(text);
-  }
-
-  // If regex didn't match (unusual format), try a simpler approach
-  if (segments.length === 0) {
-    console.warn(
-      "[fetch-transcript] Primary regex found no segments, trying fallback parser"
-    );
-    // Strip all XML tags and just get the text content
-    const plainText = xml
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, " ")
-      .replace(/\s{2,}/g, " ")
-      .trim();
-    if (plainText.length > 50) {
-      segments.push(plainText);
+    // Handle async job case (shouldn't happen for YouTube but handle gracefully)
+    if ("jobId" in result) {
+      console.warn("[supadata] Got async job ID, not supported in this flow");
+      return null;
     }
-  }
 
-  return segments;
+    const content = result.content;
+    if (!content) {
+      console.warn("[supadata] Empty transcript content");
+      return null;
+    }
+
+    let text: string;
+    if (typeof content === "string") {
+      text = content;
+    } else {
+      // Array of TranscriptChunk
+      text = content.map((c) => c.text).join(" ");
+    }
+
+    if (text.length < 50) {
+      console.warn(`[supadata] Transcript too short: ${text.length} chars`);
+      return null;
+    }
+
+    console.log(`[supadata] Got ${text.length} chars`);
+    return { text, method: "supadata" };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[supadata] Error: ${msg}`);
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -329,54 +342,71 @@ export async function POST(req: NextRequest) {
 
     console.log(`[fetch-transcript] Processing video: ${videoId}`);
 
-    // Run caption track fetch and title fetch in parallel for speed
-    const [tracks, title] = await Promise.all([
-      fetchCaptionTracks(videoId),
-      fetchVideoTitle(videoId),
-    ]);
+    // Fetch title in parallel with transcript strategies
+    const titlePromise = fetchVideoTitle(videoId);
 
-    // Prefer manual English → auto-generated English → first available track
-    const track =
-      tracks.find((t) => t.languageCode === "en" && t.kind !== "asr") ||
-      tracks.find((t) => t.languageCode === "en") ||
-      tracks[0];
+    // -----------------------------------------------------------------------
+    // Strategy 1: Innertube (fast, no API key, works from residential IPs)
+    // -----------------------------------------------------------------------
+    let rawText: string | null = null;
+    let method = "unknown";
 
-    const segments = await fetchTranscriptXml(track);
+    try {
+      const innertubeResult = await fetchViaInnertube(videoId);
+      if (innertubeResult) {
+        rawText = innertubeResult.segments.join(" ");
+        method = innertubeResult.method;
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // Re-throw known application errors
+      if (msg === "PRIVATE" || msg === "UNAVAILABLE") throw err;
+      console.warn(`[fetch-transcript] Innertube failed: ${msg}`);
+    }
 
-    if (segments.length === 0) {
+    // -----------------------------------------------------------------------
+    // Strategy 2: Supadata fallback (works from datacenter IPs)
+    // -----------------------------------------------------------------------
+    if (!rawText) {
+      console.log("[fetch-transcript] Innertube failed, trying Supadata...");
+      const supadataResult = await fetchViaSupadata(videoId);
+      if (supadataResult) {
+        rawText = supadataResult.text;
+        method = supadataResult.method;
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // No transcript from either strategy
+    // -----------------------------------------------------------------------
+    if (!rawText || rawText.length < 50) {
+      const hasSupadata = !!SUPADATA_API_KEY;
       return NextResponse.json(
         {
-          error:
-            "No captions found for this video. Make sure the video has subtitles enabled.",
+          error: hasSupadata
+            ? "Could not retrieve transcript. The video may have no captions, or both services failed."
+            : "Could not retrieve transcript from this server environment. Try pasting the video's transcript text directly.",
+          detail: `innertube=failed, supadata=${hasSupadata ? "failed" : "not-configured"}`,
         },
         { status: 422 }
       );
     }
 
-    // Build clean transcript
-    let transcript = segments
-      .join(" ")
-      .replace(NOISE_RE, "")
-      .replace(MUSIC_LINE_RE, "")
-      .replace(/\s{2,}/g, " ")
-      .trim();
-
-    const wasTruncated = transcript.length > TRANSCRIPT_CHAR_LIMIT;
-    if (wasTruncated) {
-      transcript = transcript.slice(0, TRANSCRIPT_CHAR_LIMIT);
-    }
+    // -----------------------------------------------------------------------
+    // Clean, truncate, and return
+    // -----------------------------------------------------------------------
+    const { transcript, wasTruncated } = cleanTranscript(rawText);
+    const title = await titlePromise;
 
     if (transcript.length < 50) {
       return NextResponse.json(
-        {
-          error: "Transcript is too short to generate a quiz from.",
-        },
+        { error: "Transcript is too short to generate a quiz from." },
         { status: 422 }
       );
     }
 
     console.log(
-      `[fetch-transcript] Success: ${transcript.length} chars, truncated=${wasTruncated}`
+      `[fetch-transcript] Success via ${method}: ${transcript.length} chars, truncated=${wasTruncated}`
     );
 
     return NextResponse.json({
@@ -390,15 +420,6 @@ export async function POST(req: NextRequest) {
     const msg = err instanceof Error ? err.message : String(err);
     const stack = err instanceof Error ? err.stack : undefined;
 
-    if (msg === "NO_CAPTIONS") {
-      return NextResponse.json(
-        {
-          error:
-            "Captions are disabled or unavailable for this video.",
-        },
-        { status: 422 }
-      );
-    }
     if (msg === "PRIVATE") {
       return NextResponse.json(
         { error: "This video is private." },
@@ -411,17 +432,7 @@ export async function POST(req: NextRequest) {
         { status: 422 }
       );
     }
-    if (msg === "EMPTY_TRANSCRIPT") {
-      return NextResponse.json(
-        {
-          error:
-            "Could not retrieve transcript content for this video.",
-        },
-        { status: 422 }
-      );
-    }
 
-    // Log full error details for Vercel function logs
     console.error("[fetch-transcript] Unhandled error:", msg);
     if (stack) console.error("[fetch-transcript] Stack:", stack);
 
