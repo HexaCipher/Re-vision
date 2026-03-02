@@ -31,9 +31,7 @@ export const metadata: Metadata = {
   title: "Re-vision - Transform Your Notes Into Interactive Quizzes",
   description:
     "Upload your study notes and get AI-generated quizzes instantly. Master any subject through active recall.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://re-vision.vercel.app"
-  ),
+  metadataBase: new URL("https://re-vision-eosin.vercel.app"),
   icons: {
     icon: "/favicon.svg",
     apple: "/apple-touch-icon.svg",

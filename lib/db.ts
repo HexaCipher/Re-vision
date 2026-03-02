@@ -12,7 +12,7 @@ import {
   orderBy,
   Timestamp,
 } from 'firebase/firestore';
-import { Quiz, Attempt, Question } from '@/types';
+import { Question } from '@/types';
 
 // Generate a random share code
 function generateShareCode(): string {

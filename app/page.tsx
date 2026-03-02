@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Upload, Sparkles, Trophy, Zap,
-  CheckCircle2, Circle, BookOpen, Target, Clock, TrendingUp, FileText,
+  CheckCircle2, Circle, BookOpen, Clock, TrendingUp,
   Menu, X,
 } from "lucide-react";
 import Link from "next/link";
