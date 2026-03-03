@@ -16,6 +16,65 @@ export const maxDuration = 60;
 /** Content char limit sent to LLM — keeps input tokens reasonable for speed */
 const MAX_CONTENT_CHARS = 30_000;
 
+/** Cooldown period (ms) for a failed Groq key before retrying it */
+const GROQ_KEY_COOLDOWN_MS = 60_000; // 1 minute
+
+// ---------------------------------------------------------------------------
+// Groq Multi-Key Fallback System
+// ---------------------------------------------------------------------------
+
+/**
+ * In-memory tracker for Groq API key failures.
+ * Maps key index → timestamp of last failure.
+ * Resets on cold start (serverless function recycle).
+ */
+const groqKeyFailures: Map<number, number> = new Map();
+
+/**
+ * Get all configured Groq API keys from environment.
+ * Supports GROQ_API_KEY, GROQ_API_KEY_2 through GROQ_API_KEY_6
+ */
+function getGroqApiKeys(): string[] {
+  const keys: string[] = [];
+  const envKeys = [
+    process.env.GROQ_API_KEY,
+    process.env.GROQ_API_KEY_2,
+    process.env.GROQ_API_KEY_3,
+    process.env.GROQ_API_KEY_4,
+    process.env.GROQ_API_KEY_5,
+    process.env.GROQ_API_KEY_6,
+  ];
+  for (const key of envKeys) {
+    if (key && key.trim()) {
+      keys.push(key.trim());
+    }
+  }
+  return keys;
+}
+
+/**
+ * Check if a Groq key (by index) is currently in cooldown.
+ */
+function isKeyInCooldown(keyIndex: number): boolean {
+  const failedAt = groqKeyFailures.get(keyIndex);
+  if (!failedAt) return false;
+  return Date.now() - failedAt < GROQ_KEY_COOLDOWN_MS;
+}
+
+/**
+ * Mark a Groq key as failed (puts it in cooldown).
+ */
+function markKeyFailed(keyIndex: number): void {
+  groqKeyFailures.set(keyIndex, Date.now());
+}
+
+/**
+ * Clear failure status for a key (on successful use).
+ */
+function markKeySuccess(keyIndex: number): void {
+  groqKeyFailures.delete(keyIndex);
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -199,31 +258,67 @@ async function generateWithGemini(prompt: string): Promise<string> {
 }
 
 /**
- * Generate quiz questions via Groq (Llama 3.3 70B).
+ * Generate quiz questions via Groq (Llama 3.3 70B) with multi-key fallback.
+ * Tries each configured API key in sequence, skipping keys in cooldown.
  * Used as automatic fallback when Gemini is rate-limited.
  */
 async function generateWithGroq(prompt: string): Promise<string> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error("GROQ_API_KEY not configured");
+  const apiKeys = getGroqApiKeys();
+  
+  if (apiKeys.length === 0) {
+    throw new Error("No GROQ_API_KEY configured");
+  }
 
-  const groq = new Groq({ apiKey });
+  let lastError: unknown = null;
+  
+  // Try each key in order, skipping those in cooldown
+  for (let i = 0; i < apiKeys.length; i++) {
+    // Skip keys that recently failed (in cooldown)
+    if (isKeyInCooldown(i)) {
+      console.log(`[generate-quiz] Groq key #${i + 1} in cooldown, skipping`);
+      continue;
+    }
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "system",
-        content:
-          'You are an expert quiz generator. Return ONLY valid JSON in the format: {"questions": [...]}. Every question MUST have "question" and "correctAnswer" fields. For mixed quizzes every question MUST also have a "type" field set to exactly "mcq", "true_false", or "fill_blank". No markdown, no extra text.',
-      },
-      { role: "user", content: prompt },
-    ],
-    response_format: { type: "json_object" },
-    temperature: 0.7,
-    max_tokens: 4096,
-  });
+    try {
+      console.log(`[generate-quiz] Trying Groq key #${i + 1} of ${apiKeys.length}`);
+      const groq = new Groq({ apiKey: apiKeys[i] });
 
-  return completion.choices[0]?.message?.content || "";
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content:
+              'You are an expert quiz generator. Return ONLY valid JSON in the format: {"questions": [...]}. Every question MUST have "question" and "correctAnswer" fields. For mixed quizzes every question MUST also have a "type" field set to exactly "mcq", "true_false", or "fill_blank". No markdown, no extra text.',
+          },
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+        max_tokens: 4096,
+      });
+
+      const result = completion.choices[0]?.message?.content || "";
+      
+      // Success — clear any previous failure status for this key
+      markKeySuccess(i);
+      console.log(`[generate-quiz] Groq key #${i + 1} succeeded`);
+      
+      return result;
+    } catch (err: unknown) {
+      lastError = err;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.log(`[generate-quiz] Groq key #${i + 1} failed: ${errMsg}`);
+      
+      // Mark this key as failed (enters cooldown)
+      markKeyFailed(i);
+      
+      // Continue to next key
+    }
+  }
+
+  // All keys exhausted or in cooldown
+  throw lastError || new Error("All Groq API keys exhausted or in cooldown");
 }
 
 // ---------------------------------------------------------------------------
